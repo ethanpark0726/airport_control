@@ -25,4 +25,8 @@
 - Fixed post-drag click fallback overwriting freshly drawn flight routes.
 - Changed drawing so an already-selected aircraft keeps selection while the player draws anywhere on the radar.
 - Restored switching to another aircraft by clicking near it while one is already selected.
+- Fixed aircraft selection bug where `state.selected` was not cleared after an aircraft landed, preventing subsequent aircraft from being selected.
+- Removed automatic straight-line runway approach appending (`points.threshold`, `points.touchdown`, `points.exit`), so aircraft strictly follow only the exact path drawn by the player.
+- Streamlined pointer event handling (`pointerdown`, `pointermove`, `pointerup`, `pointercancel`) and removed redundant mouse and click listeners.
 - Recorded the rule that every development change must keep `README.md` and `CHANGELOG.md` updated.
+- Added GitHub Actions CI check workflow (`ci.yml`) to enforce that code changes also update `README.md` and `CHANGELOG.md`.

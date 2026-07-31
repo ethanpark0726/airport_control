@@ -1,0 +1,58 @@
+name: CI Check
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  verify-docs-and-code:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Verify CHANGELOG.md and README.md updates on code changes
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            BASE="origin/${{ github.base_ref }}"
+          else
+            if git rev-parse HEAD~1 >/dev/null 2>&1; then
+              BASE="HEAD~1"
+            else
+              echo "No parent commit found. Skipping doc check."
+              exit 0
+            fi
+          fi
+
+          echo "Comparing HEAD against $BASE..."
+          CHANGED_FILES=$(git diff --name-only $BASE HEAD)
+          echo "Changed files:"
+          echo "$CHANGED_FILES"
+
+          CODE_CHANGED=false
+          if echo "$CHANGED_FILES" | grep -qE '^(game\.js|index\.html|style\.css)$'; then
+            CODE_CHANGED=true
+          fi
+
+          if [ "$CODE_CHANGED" = "true" ]; then
+            MISSING=""
+            if ! echo "$CHANGED_FILES" | grep -q '^CHANGELOG\.md$'; then
+              MISSING="$MISSING CHANGELOG.md"
+            fi
+            if ! echo "$CHANGED_FILES" | grep -q '^README\.md$'; then
+              MISSING="$MISSING README.md"
+            fi
+
+            if [ -n "$MISSING" ]; then
+              echo "::error::Code changes detected, but the following required documentation files were not updated:$MISSING"
+              exit 1
+            else
+              echo "✅ Verification successful: Both CHANGELOG.md and README.md were updated alongside code changes."
+            fi
+          else
+            echo "No code files were modified in this commit/PR. Doc check passed."
+          fi
