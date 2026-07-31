@@ -111,8 +111,8 @@ function assignLandingRoute(plane, control = defaultCurveControl(plane)) {
   const points = runwayPoints();
   const curve = sampleQuadratic({ x: plane.x, y: plane.y }, control, points.approach, 18);
   plane.curveControl = control;
-  plane.target = curve[0];
-  plane.route = [...curve.slice(1), points.threshold, points.touchdown, points.exit];
+  plane.route = [...curve, points.threshold, points.touchdown, points.exit];
+  plane.target = plane.route[0];
   state.pings.push({ ...points.approach, age: 0 });
 }
 
@@ -192,11 +192,14 @@ function update(dt) {
   const r = runway();
   for (const plane of state.planes) {
     plane.age += dt;
-    advanceRoute(plane);
-    const desired = Math.atan2(plane.target.y - plane.y, plane.target.x - plane.x);
-    plane.angle = turnToward(plane.angle, desired, dt * 1.35);
-    plane.x += Math.cos(plane.angle) * plane.speed * dt;
-    plane.y += Math.sin(plane.angle) * plane.speed * dt;
+    if (plane.route.length) {
+      moveAlongRoute(plane, plane.speed * dt);
+    } else {
+      const desired = Math.atan2(plane.target.y - plane.y, plane.target.x - plane.x);
+      plane.angle = turnToward(plane.angle, desired, dt * 1.35);
+      plane.x += Math.cos(plane.angle) * plane.speed * dt;
+      plane.y += Math.sin(plane.angle) * plane.speed * dt;
+    }
     plane.safe = true;
   }
 
@@ -236,9 +239,25 @@ function update(dt) {
   });
 }
 
-function advanceRoute(plane) {
-  if (!plane.route.length || Math.hypot(plane.target.x - plane.x, plane.target.y - plane.y) > 24) return;
-  plane.target = plane.route.shift();
+function moveAlongRoute(plane, distance) {
+  while (distance > 0 && plane.route.length) {
+    const next = plane.route[0];
+    const dx = next.x - plane.x;
+    const dy = next.y - plane.y;
+    const segment = Math.hypot(dx, dy);
+    if (segment <= distance) {
+      plane.x = next.x;
+      plane.y = next.y;
+      plane.route.shift();
+      distance -= segment;
+      continue;
+    }
+    plane.angle = Math.atan2(dy, dx);
+    plane.x += Math.cos(plane.angle) * distance;
+    plane.y += Math.sin(plane.angle) * distance;
+    distance = 0;
+  }
+  plane.target = plane.route[0] || plane.target;
 }
 
 function turnToward(current, target, maxTurn) {
@@ -465,7 +484,8 @@ function drawTargetLine(plane, selected) {
 }
 
 function drawLandingRoute(plane) {
-  const points = [plane.target, ...plane.route];
+  const points = plane.route;
+  if (!points.length) return;
   ctx.strokeStyle = "rgba(255,50,68,0.9)";
   ctx.lineWidth = 4;
   ctx.setLineDash([]);
@@ -546,7 +566,9 @@ function selfCheck() {
   console.assert(!canLand({ x: r.x, y: r.y, angle: r.angle + 1.2, speed: 60 }, r), "bad heading should not land");
   console.assert(!canLand({ x: r.x, y: r.y, angle: r.angle + Math.PI, speed: 60 }, r), "opposite heading should not land");
   assignLandingRoute(fakePlane);
-  console.assert(fakePlane.route.length === 20, "landing route should include curve samples and runway points");
+  console.assert(fakePlane.route.length === 21, "landing route should include curve samples and runway points");
+  moveAlongRoute(fakePlane, 10);
+  console.assert(fakePlane.x !== 0 || fakePlane.y !== 0, "route movement should move the aircraft onto the curve");
   console.assert(Math.abs(turnToward(0, Math.PI, 0.2) - 0.2) < 0.001, "turnToward clamps rotation");
   Object.assign(state, old);
 }

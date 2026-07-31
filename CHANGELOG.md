@@ -16,4 +16,5 @@
 - Added a click fallback for aircraft selection when pointer events are not delivered.
 - Added a mousedown fallback with shared input debouncing for browser compatibility.
 - Changed first click with no selected aircraft to pick the nearest aircraft.
+- Fixed curve guidance so aircraft positions move directly along the red route instead of merely steering toward route points.
 - Recorded the rule that every development change must keep `README.md` and `CHANGELOG.md` updated.
