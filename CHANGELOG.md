@@ -28,5 +28,6 @@
 - Fixed aircraft selection bug where `state.selected` was not cleared after an aircraft landed, preventing subsequent aircraft from being selected.
 - Removed automatic straight-line runway approach appending (`points.threshold`, `points.touchdown`, `points.exit`), so aircraft strictly follow only the exact path drawn by the player.
 - Streamlined pointer event handling (`pointerdown`, `pointermove`, `pointerup`, `pointercancel`) and removed redundant mouse and click listeners.
+- Calibrated mobile touch input by adding DPR/bounding rect scaling, removing initial touch-offset jumps, enabling `setPointerCapture`, and setting `viewport-fit` meta properties.
 - Recorded the rule that every development change must keep `README.md` and `CHANGELOG.md` updated.
 - Added GitHub Actions CI check workflow (`ci.yml`) to enforce that code changes also update `README.md` and `CHANGELOG.md`.

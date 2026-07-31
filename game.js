@@ -175,10 +175,16 @@ function planeAt(x, y, maxDistance = 72) {
 
 function pointerPosition(event) {
   const rect = canvas.getBoundingClientRect();
-  const touch = event.touches && event.touches[0];
+  const touch = (event.touches && event.touches[0]) || (event.changedTouches && event.changedTouches[0]);
+  const clientX = touch ? touch.clientX : (event.clientX !== undefined ? event.clientX : 0);
+  const clientY = touch ? touch.clientY : (event.clientY !== undefined ? event.clientY : 0);
+
+  const scaleX = rect.width ? state.width / rect.width : 1;
+  const scaleY = rect.height ? state.height / rect.height : 1;
+
   return {
-    x: (touch ? touch.clientX : event.clientX) - rect.left,
-    y: (touch ? touch.clientY : event.clientY) - rect.top,
+    x: (clientX - rect.left) * scaleX,
+    y: (clientY - rect.top) * scaleY,
   };
 }
 
@@ -195,15 +201,19 @@ function handlePointerDown(event) {
   const picked = planeAt(x, y, state.selected ? 72 : Infinity);
   if (picked) {
     state.selected = picked;
-    assignLandingRoute(picked);
     state.drawing = true;
-    state.drawnRoute = [{ x: picked.x, y: picked.y }, { x, y }];
+    state.drawnRoute = [{ x: picked.x, y: picked.y }];
+    if (canvas.setPointerCapture && event.pointerId !== undefined) {
+      try { canvas.setPointerCapture(event.pointerId); } catch (_) {}
+    }
     return;
   }
   if (state.selected) {
     state.drawing = true;
-    state.drawnRoute = [{ x: state.selected.x, y: state.selected.y }, { x, y }];
-    setDrawnRoute(state.selected, state.drawnRoute);
+    state.drawnRoute = [{ x: state.selected.x, y: state.selected.y }];
+    if (canvas.setPointerCapture && event.pointerId !== undefined) {
+      try { canvas.setPointerCapture(event.pointerId); } catch (_) {}
+    }
     return;
   }
 }
@@ -218,7 +228,10 @@ function handlePointerMove(event) {
   setDrawnRoute(state.selected, state.drawnRoute);
 }
 
-function handlePointerUp() {
+function handlePointerUp(event) {
+  if (canvas.releasePointerCapture && event && event.pointerId !== undefined) {
+    try { canvas.releasePointerCapture(event.pointerId); } catch (_) {}
+  }
   state.drawing = false;
   state.drawnRoute = [];
 }

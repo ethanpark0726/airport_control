@@ -4,7 +4,7 @@ A small browser-based air traffic control game built with plain HTML, CSS, and C
 
 ## Gameplay
 
-Click an aircraft, or click near one, to select it. Once selected, hold and drag anywhere on the radar to draw that aircraft's red route. Click another aircraft to switch selection, then draw its route. The aircraft follows the exact drawn route.
+Click or touch an aircraft, or tap near one, to select it. Once selected, hold and drag anywhere on the radar to draw that aircraft's red route. Click or tap another aircraft to switch selection, then draw its route. The aircraft follows the exact drawn route. Touch controls are calibrated for mobile screens with high precision scaling and pointer capture.
 
 The green block on the runway marks the landing zone. Aircraft must enter from the `APPROACH` side and line up with the runway heading before crossing that zone.
 
