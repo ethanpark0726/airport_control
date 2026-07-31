@@ -17,4 +17,9 @@
 - Added a mousedown fallback with shared input debouncing for browser compatibility.
 - Changed first click with no selected aircraft to pick the nearest aircraft.
 - Fixed curve guidance so aircraft positions move directly along the red route instead of merely steering toward route points.
+- Replaced click-to-bend control with freehand mouse-drawn routes that aircraft follow directly.
+- Added automatic runway approach appending when a drawn route ends near the `APPROACH` marker.
+- Disabled default canvas touch gestures so drag drawing works on touch devices.
+- Changed runway auto-append so routes ending near the landing zone continue forward instead of backtracking to `APPROACH`.
+- Expanded the runway auto-append snap range to make landing less fiddly.
 - Recorded the rule that every development change must keep `README.md` and `CHANGELOG.md` updated.

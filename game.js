@@ -17,6 +17,8 @@ const state = {
   landed: 0,
   lives: 3,
   selected: null,
+  drawing: false,
+  drawnRoute: [],
   gameOver: false,
   lastInputAt: 0,
   planes: [],
@@ -65,6 +67,8 @@ function reset() {
     landed: 0,
     lives: 3,
     selected: null,
+    drawing: false,
+    drawnRoute: [],
     gameOver: false,
     planes: [],
     pings: [],
@@ -103,8 +107,32 @@ function spawnPlane() {
 }
 
 function setTarget(plane, x, y) {
-  assignLandingRoute(plane, { x, y });
+  setDrawnRoute(plane, [{ x, y }]);
   state.pings.push({ x, y, age: 0 });
+}
+
+function setDrawnRoute(plane, route) {
+  const points = runwayPoints();
+  const cleanRoute = simplifyRoute(route);
+  plane.curveControl = null;
+  plane.route = [...cleanRoute];
+  if (cleanRoute.length && Math.hypot(cleanRoute.at(-1).x - points.threshold.x, cleanRoute.at(-1).y - points.threshold.y) < 240) {
+    plane.route.push(points.threshold, points.touchdown, points.exit);
+  } else if (cleanRoute.length && Math.hypot(cleanRoute.at(-1).x - points.approach.x, cleanRoute.at(-1).y - points.approach.y) < 220) {
+    plane.route.push(points.approach, points.threshold, points.touchdown, points.exit);
+  }
+  plane.target = plane.route[0] || plane.target;
+}
+
+function simplifyRoute(route) {
+  const result = [];
+  for (const point of route) {
+    const last = result.at(-1);
+    if (!last || Math.hypot(point.x - last.x, point.y - last.y) > 10) {
+      result.push(point);
+    }
+  }
+  return result;
 }
 
 function assignLandingRoute(plane, control = defaultCurveControl(plane)) {
@@ -159,10 +187,10 @@ function pointerPosition(event) {
   };
 }
 
-function handlePointer(event) {
+function handlePointerDown(event) {
   event.preventDefault();
   const now = performance.now();
-  if (now - state.lastInputAt < 120) return;
+  if (now - state.lastInputAt < (event.type === "click" ? 500 : 120)) return;
   state.lastInputAt = now;
   if (state.gameOver) {
     reset();
@@ -173,11 +201,30 @@ function handlePointer(event) {
   if (picked) {
     state.selected = picked;
     assignLandingRoute(picked);
+    state.drawing = true;
+    state.drawnRoute = [{ x: picked.x, y: picked.y }, { x, y }];
     return;
   }
   if (state.selected) {
-    setTarget(state.selected, x, y);
+    state.drawing = true;
+    state.drawnRoute = [{ x: state.selected.x, y: state.selected.y }, { x, y }];
+    setDrawnRoute(state.selected, state.drawnRoute);
   }
+}
+
+function handlePointerMove(event) {
+  if (!state.drawing || !state.selected || state.gameOver) return;
+  event.preventDefault();
+  const { x, y } = pointerPosition(event);
+  const last = state.drawnRoute.at(-1);
+  if (last && Math.hypot(x - last.x, y - last.y) < 8) return;
+  state.drawnRoute.push({ x, y });
+  setDrawnRoute(state.selected, state.drawnRoute);
+}
+
+function handlePointerUp() {
+  state.drawing = false;
+  state.drawnRoute = [];
 }
 
 function update(dt) {
@@ -569,14 +616,20 @@ function selfCheck() {
   console.assert(fakePlane.route.length === 21, "landing route should include curve samples and runway points");
   moveAlongRoute(fakePlane, 10);
   console.assert(fakePlane.x !== 0 || fakePlane.y !== 0, "route movement should move the aircraft onto the curve");
+  setDrawnRoute(fakePlane, [{ x: r.x, y: r.y }]);
+  console.assert(fakePlane.route.length === 4, "drawn routes near the runway should append forward landing points");
   console.assert(Math.abs(turnToward(0, Math.PI, 0.2) - 0.2) < 0.001, "turnToward clamps rotation");
   Object.assign(state, old);
 }
 
 window.addEventListener("resize", resize);
-canvas.addEventListener("pointerdown", handlePointer);
-canvas.addEventListener("mousedown", handlePointer);
-canvas.addEventListener("click", handlePointer);
+canvas.addEventListener("pointerdown", handlePointerDown);
+canvas.addEventListener("pointermove", handlePointerMove);
+window.addEventListener("pointerup", handlePointerUp);
+canvas.addEventListener("mousedown", handlePointerDown);
+canvas.addEventListener("mousemove", handlePointerMove);
+window.addEventListener("mouseup", handlePointerUp);
+canvas.addEventListener("click", handlePointerDown);
 restartButton.addEventListener("click", reset);
 
 resize();
