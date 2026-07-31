@@ -190,13 +190,12 @@ function pointerPosition(event) {
 
 function handlePointerDown(event) {
   event.preventDefault();
-  const now = performance.now();
-  if (event.type === "click" && now < state.ignoreClickUntil) return;
-  if (now - state.lastInputAt < (event.type === "click" ? 500 : 120)) return;
-  state.lastInputAt = now;
   if (state.gameOver) {
     reset();
     return;
+  }
+  if (state.selected && !state.planes.includes(state.selected)) {
+    state.selected = null;
   }
   const { x, y } = pointerPosition(event);
   const picked = planeAt(x, y, state.selected ? 72 : Infinity);
@@ -218,7 +217,6 @@ function handlePointerDown(event) {
 function handlePointerMove(event) {
   if (!state.drawing || !state.selected || state.gameOver) return;
   event.preventDefault();
-  state.ignoreClickUntil = performance.now() + 1200;
   const { x, y } = pointerPosition(event);
   const last = state.drawnRoute.at(-1);
   if (last && Math.hypot(x - last.x, y - last.y) < 8) return;
@@ -227,7 +225,6 @@ function handlePointerMove(event) {
 }
 
 function handlePointerUp() {
-  if (state.drawing) state.ignoreClickUntil = performance.now() + 1200;
   state.drawing = false;
   state.drawnRoute = [];
 }
@@ -284,6 +281,10 @@ function update(dt) {
     }
     return true;
   });
+
+  if (state.selected && !state.planes.includes(state.selected)) {
+    state.selected = null;
+  }
 
   state.pings = state.pings.filter((ping) => {
     ping.age += dt;
@@ -624,6 +625,16 @@ function selfCheck() {
   setDrawnRoute(fakePlane, [{ x: r.x, y: r.y }]);
   console.assert(fakePlane.route.length === 4, "drawn routes near the runway should append forward landing points");
   console.assert(Math.abs(turnToward(0, Math.PI, 0.2) - 0.2) < 0.001, "turnToward clamps rotation");
+
+  // Verify selection resets when plane lands
+  state.planes = [fakePlane];
+  state.selected = fakePlane;
+  state.planes = [];
+  if (state.selected && !state.planes.includes(state.selected)) {
+    state.selected = null;
+  }
+  console.assert(state.selected === null, "selected plane should reset to null when plane is removed from state.planes");
+
   Object.assign(state, old);
 }
 
@@ -631,10 +642,7 @@ window.addEventListener("resize", resize);
 canvas.addEventListener("pointerdown", handlePointerDown);
 canvas.addEventListener("pointermove", handlePointerMove);
 window.addEventListener("pointerup", handlePointerUp);
-canvas.addEventListener("mousedown", handlePointerDown);
-canvas.addEventListener("mousemove", handlePointerMove);
-window.addEventListener("mouseup", handlePointerUp);
-canvas.addEventListener("click", handlePointerDown);
+window.addEventListener("pointercancel", handlePointerUp);
 restartButton.addEventListener("click", reset);
 
 resize();
