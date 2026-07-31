@@ -24,4 +24,5 @@
 - Expanded the runway auto-append snap range to make landing less fiddly.
 - Fixed post-drag click fallback overwriting freshly drawn flight routes.
 - Changed drawing so an already-selected aircraft keeps selection while the player draws anywhere on the radar.
+- Restored switching to another aircraft by clicking near it while one is already selected.
 - Recorded the rule that every development change must keep `README.md` and `CHANGELOG.md` updated.

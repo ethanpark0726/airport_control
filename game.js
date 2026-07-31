@@ -199,18 +199,19 @@ function handlePointerDown(event) {
     return;
   }
   const { x, y } = pointerPosition(event);
-  if (state.selected) {
-    state.drawing = true;
-    state.drawnRoute = [{ x: state.selected.x, y: state.selected.y }, { x, y }];
-    setDrawnRoute(state.selected, state.drawnRoute);
-    return;
-  }
-  const picked = planeAt(x, y, Infinity);
+  const picked = planeAt(x, y, state.selected ? 72 : Infinity);
   if (picked) {
     state.selected = picked;
     assignLandingRoute(picked);
     state.drawing = true;
     state.drawnRoute = [{ x: picked.x, y: picked.y }, { x, y }];
+    return;
+  }
+  if (state.selected) {
+    state.drawing = true;
+    state.drawnRoute = [{ x: state.selected.x, y: state.selected.y }, { x, y }];
+    setDrawnRoute(state.selected, state.drawnRoute);
+    return;
   }
 }
 
