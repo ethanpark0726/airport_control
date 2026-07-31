@@ -113,15 +113,9 @@ function setTarget(plane, x, y) {
 }
 
 function setDrawnRoute(plane, route) {
-  const points = runwayPoints();
   const cleanRoute = simplifyRoute(route);
   plane.curveControl = null;
   plane.route = [...cleanRoute];
-  if (cleanRoute.length && Math.hypot(cleanRoute.at(-1).x - points.threshold.x, cleanRoute.at(-1).y - points.threshold.y) < 240) {
-    plane.route.push(points.threshold, points.touchdown, points.exit);
-  } else if (cleanRoute.length && Math.hypot(cleanRoute.at(-1).x - points.approach.x, cleanRoute.at(-1).y - points.approach.y) < 220) {
-    plane.route.push(points.approach, points.threshold, points.touchdown, points.exit);
-  }
   plane.target = plane.route[0] || plane.target;
 }
 
@@ -140,7 +134,7 @@ function assignLandingRoute(plane, control = defaultCurveControl(plane)) {
   const points = runwayPoints();
   const curve = sampleQuadratic({ x: plane.x, y: plane.y }, control, points.approach, 18);
   plane.curveControl = control;
-  plane.route = [...curve, points.threshold, points.touchdown, points.exit];
+  plane.route = [...curve];
   plane.target = plane.route[0];
   state.pings.push({ ...points.approach, age: 0 });
 }
@@ -619,11 +613,11 @@ function selfCheck() {
   console.assert(!canLand({ x: r.x, y: r.y, angle: r.angle + 1.2, speed: 60 }, r), "bad heading should not land");
   console.assert(!canLand({ x: r.x, y: r.y, angle: r.angle + Math.PI, speed: 60 }, r), "opposite heading should not land");
   assignLandingRoute(fakePlane);
-  console.assert(fakePlane.route.length === 21, "landing route should include curve samples and runway points");
+  console.assert(fakePlane.route.length === 18, "landing route should include curve samples");
   moveAlongRoute(fakePlane, 10);
   console.assert(fakePlane.x !== 0 || fakePlane.y !== 0, "route movement should move the aircraft onto the curve");
   setDrawnRoute(fakePlane, [{ x: r.x, y: r.y }]);
-  console.assert(fakePlane.route.length === 4, "drawn routes near the runway should append forward landing points");
+  console.assert(fakePlane.route.length === 1, "drawn routes should contain exactly the user drawn points");
   console.assert(Math.abs(turnToward(0, Math.PI, 0.2) - 0.2) < 0.001, "turnToward clamps rotation");
 
   // Verify selection resets when plane lands
