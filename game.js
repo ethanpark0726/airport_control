@@ -18,6 +18,7 @@ const state = {
   lives: 3,
   selected: null,
   gameOver: false,
+  lastInputAt: 0,
   planes: [],
   pings: [],
 };
@@ -94,6 +95,7 @@ function spawnPlane() {
     speed,
     target,
     route: [],
+    curveControl: null,
     radius: 12,
     safe: true,
     age: 0,
@@ -101,21 +103,43 @@ function spawnPlane() {
 }
 
 function setTarget(plane, x, y) {
-  plane.target = { x, y };
-  plane.route = [];
+  assignLandingRoute(plane, { x, y });
   state.pings.push({ x, y, age: 0 });
 }
 
-function assignLandingRoute(plane) {
+function assignLandingRoute(plane, control = defaultCurveControl(plane)) {
   const points = runwayPoints();
-  plane.route = [points.threshold, points.touchdown, points.exit];
-  plane.target = points.approach;
+  const curve = sampleQuadratic({ x: plane.x, y: plane.y }, control, points.approach, 18);
+  plane.curveControl = control;
+  plane.target = curve[0];
+  plane.route = [...curve.slice(1), points.threshold, points.touchdown, points.exit];
   state.pings.push({ ...points.approach, age: 0 });
 }
 
-function planeAt(x, y) {
+function defaultCurveControl(plane) {
+  const points = runwayPoints();
+  return {
+    x: (plane.x + points.approach.x) / 2,
+    y: (plane.y + points.approach.y) / 2 + Math.min(state.width, state.height) * 0.16,
+  };
+}
+
+function sampleQuadratic(start, control, end, steps) {
+  const points = [];
+  for (let i = 1; i <= steps; i += 1) {
+    const t = i / steps;
+    const m = 1 - t;
+    points.push({
+      x: m * m * start.x + 2 * m * t * control.x + t * t * end.x,
+      y: m * m * start.y + 2 * m * t * control.y + t * t * end.y,
+    });
+  }
+  return points;
+}
+
+function planeAt(x, y, maxDistance = 72) {
   let nearest = null;
-  let distance = 52;
+  let distance = maxDistance;
   for (const plane of state.planes) {
     const d = Math.hypot(plane.x - x, plane.y - y);
     if (d < distance) {
@@ -137,12 +161,15 @@ function pointerPosition(event) {
 
 function handlePointer(event) {
   event.preventDefault();
+  const now = performance.now();
+  if (now - state.lastInputAt < 120) return;
+  state.lastInputAt = now;
   if (state.gameOver) {
     reset();
     return;
   }
   const { x, y } = pointerPosition(event);
-  const picked = planeAt(x, y);
+  const picked = planeAt(x, y, state.selected ? 72 : Infinity);
   if (picked) {
     state.selected = picked;
     assignLandingRoute(picked);
@@ -210,7 +237,7 @@ function update(dt) {
 }
 
 function advanceRoute(plane) {
-  if (!plane.route.length || Math.hypot(plane.target.x - plane.x, plane.target.y - plane.y) > 30) return;
+  if (!plane.route.length || Math.hypot(plane.target.x - plane.x, plane.target.y - plane.y) > 24) return;
   plane.target = plane.route.shift();
 }
 
@@ -339,6 +366,8 @@ function drawRunway() {
   ctx.strokeStyle = "rgba(231,255,246,0.55)";
   ctx.lineWidth = 2;
   ctx.fillRect(-r.length / 2, -r.width / 2, r.length, r.width);
+  ctx.fillStyle = "rgba(88,255,209,0.24)";
+  ctx.fillRect(-r.length / 2 + 10, -r.width / 2 + 4, r.length * 0.38, r.width - 8);
   ctx.strokeRect(-r.length / 2, -r.width / 2, r.length, r.width);
   ctx.setLineDash([18, 16]);
   ctx.beginPath();
@@ -346,6 +375,13 @@ function drawRunway() {
   ctx.lineTo(r.length / 2 - 20, 0);
   ctx.strokeStyle = "rgba(231,255,246,0.7)";
   ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle = "rgba(159,255,240,0.9)";
+  ctx.font = "700 10px ui-monospace, SFMono-Regular, Consolas, monospace";
+  ctx.textAlign = "center";
+  ctx.fillText("LAND", -r.length * 0.31, -r.width * 0.72);
+  drawRunwayArrow(-r.length * 0.42, r.width * 0.72, 18);
+  drawRunwayArrow(-r.length * 0.24, r.width * 0.72, 18);
   ctx.restore();
 
   ctx.save();
@@ -357,6 +393,21 @@ function drawRunway() {
   ctx.moveTo(points.approach.x - Math.cos(r.angle) * 12, points.approach.y - Math.sin(r.angle) * 12);
   ctx.lineTo(points.approach.x + Math.cos(r.angle) * 12, points.approach.y + Math.sin(r.angle) * 12);
   ctx.strokeStyle = "rgba(255,231,118,0.82)";
+  ctx.stroke();
+  ctx.restore();
+}
+
+function drawRunwayArrow(x, y, size) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.strokeStyle = "rgba(159,255,240,0.82)";
+  ctx.lineWidth = 1.4;
+  ctx.beginPath();
+  ctx.moveTo(-size / 2, 0);
+  ctx.lineTo(size / 2, 0);
+  ctx.lineTo(size / 2 - 5, -4);
+  ctx.moveTo(size / 2, 0);
+  ctx.lineTo(size / 2 - 5, 4);
   ctx.stroke();
   ctx.restore();
 }
@@ -378,8 +429,8 @@ function drawPlane(plane) {
   ctx.translate(plane.x, plane.y);
   ctx.rotate(plane.angle);
 
-  ctx.strokeStyle = selected ? "rgba(255,231,118,0.9)" : plane.safe ? "rgba(88,255,209,0.82)" : "rgba(255,94,115,0.95)";
-  ctx.fillStyle = selected ? "rgba(255,231,118,0.24)" : plane.safe ? "rgba(88,255,209,0.2)" : "rgba(255,94,115,0.24)";
+  ctx.strokeStyle = selected ? "rgba(255,231,118,1)" : plane.safe ? "rgba(88,255,209,0.82)" : "rgba(255,94,115,0.95)";
+  ctx.fillStyle = selected ? "rgba(255,231,118,0.34)" : plane.safe ? "rgba(88,255,209,0.2)" : "rgba(255,94,115,0.24)";
   ctx.lineWidth = 2;
   ctx.shadowBlur = selected || !plane.safe ? 18 : 10;
   ctx.shadowColor = ctx.strokeStyle;
@@ -415,16 +466,29 @@ function drawTargetLine(plane, selected) {
 
 function drawLandingRoute(plane) {
   const points = [plane.target, ...plane.route];
-  ctx.strokeStyle = "rgba(255,231,118,0.62)";
-  ctx.lineWidth = 2;
-  ctx.setLineDash([10, 8]);
+  ctx.strokeStyle = "rgba(255,50,68,0.9)";
+  ctx.lineWidth = 4;
+  ctx.setLineDash([]);
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
   ctx.beginPath();
   ctx.moveTo(plane.x, plane.y);
-  ctx.quadraticCurveTo(points[0].x, points[0].y, points[1].x, points[1].y);
-  for (let i = 2; i < points.length; i += 1) {
+  for (let i = 0; i < points.length; i += 1) {
     ctx.lineTo(points[i].x, points[i].y);
   }
   ctx.stroke();
+
+  if (plane.curveControl) {
+    const approachAnchor = points[Math.max(0, points.length - 4)];
+    ctx.strokeStyle = "rgba(255,231,118,0.28)";
+    ctx.lineWidth = 1;
+    ctx.setLineDash([4, 8]);
+    ctx.beginPath();
+    ctx.moveTo(plane.x, plane.y);
+    ctx.lineTo(plane.curveControl.x, plane.curveControl.y);
+    ctx.lineTo(approachAnchor.x, approachAnchor.y);
+    ctx.stroke();
+  }
 
   for (const point of points) {
     ctx.beginPath();
@@ -482,13 +546,15 @@ function selfCheck() {
   console.assert(!canLand({ x: r.x, y: r.y, angle: r.angle + 1.2, speed: 60 }, r), "bad heading should not land");
   console.assert(!canLand({ x: r.x, y: r.y, angle: r.angle + Math.PI, speed: 60 }, r), "opposite heading should not land");
   assignLandingRoute(fakePlane);
-  console.assert(fakePlane.route.length === 3, "landing route should include threshold, touchdown, and exit");
+  console.assert(fakePlane.route.length === 20, "landing route should include curve samples and runway points");
   console.assert(Math.abs(turnToward(0, Math.PI, 0.2) - 0.2) < 0.001, "turnToward clamps rotation");
   Object.assign(state, old);
 }
 
 window.addEventListener("resize", resize);
 canvas.addEventListener("pointerdown", handlePointer);
+canvas.addEventListener("mousedown", handlePointer);
+canvas.addEventListener("click", handlePointer);
 restartButton.addEventListener("click", reset);
 
 resize();

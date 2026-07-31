@@ -4,9 +4,9 @@ A small browser-based air traffic control game built with plain HTML, CSS, and C
 
 ## Gameplay
 
-Click an aircraft to assign it to the runway. A curved yellow guide shows the one-way approach path: approach fix, threshold, touchdown, and runway exit. Aircraft must line up with the runway heading from the approach side to land.
+Click an aircraft, or click near one, to assign the nearest aircraft to the runway. A red curved guide shows the actual route the aircraft will fly: curve entry, approach fix, threshold, touchdown point, and runway exit. Click another point while the aircraft is selected to bend that curve through the clicked point.
 
-Manual vectoring still works: after selecting an aircraft, click another point on the radar to give it a direct heading target.
+The green block on the runway marks the landing zone. Aircraft must enter from the `APPROACH` side and line up with the runway heading before crossing that zone.
 
 ## Play locally
 
