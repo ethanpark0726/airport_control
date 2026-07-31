@@ -22,4 +22,6 @@
 - Disabled default canvas touch gestures so drag drawing works on touch devices.
 - Changed runway auto-append so routes ending near the landing zone continue forward instead of backtracking to `APPROACH`.
 - Expanded the runway auto-append snap range to make landing less fiddly.
+- Fixed post-drag click fallback overwriting freshly drawn flight routes.
+- Changed drawing so an already-selected aircraft keeps selection while the player draws anywhere on the radar.
 - Recorded the rule that every development change must keep `README.md` and `CHANGELOG.md` updated.

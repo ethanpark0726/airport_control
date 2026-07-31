@@ -21,6 +21,7 @@ const state = {
   drawnRoute: [],
   gameOver: false,
   lastInputAt: 0,
+  ignoreClickUntil: 0,
   planes: [],
   pings: [],
 };
@@ -190,6 +191,7 @@ function pointerPosition(event) {
 function handlePointerDown(event) {
   event.preventDefault();
   const now = performance.now();
+  if (event.type === "click" && now < state.ignoreClickUntil) return;
   if (now - state.lastInputAt < (event.type === "click" ? 500 : 120)) return;
   state.lastInputAt = now;
   if (state.gameOver) {
@@ -197,24 +199,25 @@ function handlePointerDown(event) {
     return;
   }
   const { x, y } = pointerPosition(event);
-  const picked = planeAt(x, y, state.selected ? 72 : Infinity);
+  if (state.selected) {
+    state.drawing = true;
+    state.drawnRoute = [{ x: state.selected.x, y: state.selected.y }, { x, y }];
+    setDrawnRoute(state.selected, state.drawnRoute);
+    return;
+  }
+  const picked = planeAt(x, y, Infinity);
   if (picked) {
     state.selected = picked;
     assignLandingRoute(picked);
     state.drawing = true;
     state.drawnRoute = [{ x: picked.x, y: picked.y }, { x, y }];
-    return;
-  }
-  if (state.selected) {
-    state.drawing = true;
-    state.drawnRoute = [{ x: state.selected.x, y: state.selected.y }, { x, y }];
-    setDrawnRoute(state.selected, state.drawnRoute);
   }
 }
 
 function handlePointerMove(event) {
   if (!state.drawing || !state.selected || state.gameOver) return;
   event.preventDefault();
+  state.ignoreClickUntil = performance.now() + 1200;
   const { x, y } = pointerPosition(event);
   const last = state.drawnRoute.at(-1);
   if (last && Math.hypot(x - last.x, y - last.y) < 8) return;
@@ -223,6 +226,7 @@ function handlePointerMove(event) {
 }
 
 function handlePointerUp() {
+  if (state.drawing) state.ignoreClickUntil = performance.now() + 1200;
   state.drawing = false;
   state.drawnRoute = [];
 }
