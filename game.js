@@ -477,59 +477,6 @@ function drawCozyEnvironment() {
     ctx.fill();
   }
 
-  // Tarmac Apron & Taxiway Connecting to Runway
-  ctx.save();
-  ctx.fillStyle = "#1d2924";
-  ctx.strokeStyle = "rgba(255, 231, 118, 0.35)";
-  ctx.lineWidth = 1.5;
-
-  // Taxiway Strip from Apron to Runway
-  ctx.beginPath();
-  ctx.moveTo(r.x + r.length * 0.1, r.y - r.width);
-  ctx.lineTo(state.width - 150, 90);
-  ctx.lineTo(state.width - 120, 90);
-  ctx.lineTo(r.x + r.length * 0.25, r.y - r.width);
-  ctx.closePath();
-  ctx.fill();
-
-  // Parking Apron Tarmac (Top Right)
-  ctx.beginPath();
-  ctx.roundRect(state.width - 165, 20, 145, 75, 8);
-  ctx.fill();
-  ctx.stroke();
-
-  // Yellow Taxiway Guide Line
-  ctx.setLineDash([6, 6]);
-  ctx.beginPath();
-  ctx.moveTo(r.x + r.length * 0.17, r.y - r.width / 2);
-  ctx.quadraticCurveTo(state.width - 140, r.y * 0.6, state.width - 95, 55);
-  ctx.stroke();
-  ctx.setLineDash([]);
-
-  // Parked Aircraft Silhouettes on Apron
-  ctx.fillStyle = "rgba(88, 255, 209, 0.35)";
-  drawParkedPlaneSilhouette(state.width - 130, 45, -0.4);
-  drawParkedPlaneSilhouette(state.width - 65, 45, -0.4);
-  ctx.restore();
-
-  // Control Tower Structure (Top Right of Apron)
-  const tx = state.width - 175;
-  const ty = 40;
-  ctx.fillStyle = "#13211b";
-  ctx.strokeStyle = "rgba(159, 255, 220, 0.4)";
-  ctx.lineWidth = 1.5;
-  ctx.beginPath();
-  ctx.arc(tx, ty, 12, 0, TAU);
-  ctx.fill();
-  ctx.stroke();
-
-  // Tower Beacon Pulsing Light
-  const beaconGlow = (Math.sin(state.elapsed * 4) + 1) / 2;
-  ctx.fillStyle = `rgba(88, 255, 209, ${0.4 + beaconGlow * 0.5})`;
-  ctx.beginPath();
-  ctx.arc(tx, ty, 4, 0, TAU);
-  ctx.fill();
-
   // Animated Windmill (Top Left)
   const wx = 80;
   const wy = 85;
@@ -585,17 +532,6 @@ function drawCozyEnvironment() {
     ctx.fill();
   }
 
-  ctx.restore();
-}
-
-function drawParkedPlaneSilhouette(x, y, angle) {
-  ctx.save();
-  ctx.translate(x, y);
-  ctx.rotate(angle);
-  ctx.beginPath();
-  ctx.roundRect(-3, -10, 6, 20, 2);
-  ctx.roundRect(-8, -2, 16, 4, 1);
-  ctx.fill();
   ctx.restore();
 }
 
