@@ -1,6 +1,12 @@
-# Airport Control
+# Airport Control — Cozy Regional Air Traffic Game
 
-A small browser-based air traffic control game built with plain HTML, CSS, and Canvas.
+[![CI Check](https://github.com/ethanpark0726/airport_control/actions/workflows/ci.yml/badge.svg)](https://github.com/ethanpark0726/airport_control/actions/workflows/ci.yml)
+[![Deploy to GitHub Pages](https://github.com/ethanpark0726/airport_control/actions/workflows/pages.yml/badge.svg)](https://github.com/ethanpark0726/airport_control/actions/workflows/pages.yml)
+![Tech Stack](https://img.shields.io/badge/Tech-HTML5%20Canvas%20%7C%20JS-58ffd1?style=flat-square)
+![License](https://img.shields.io/badge/License-MIT-06d6a0?style=flat-square)
+![Version](https://img.shields.io/badge/Version-v2.0.0-9d4edd?style=flat-square)
+
+A warm, picturesque browser-based air traffic control game built with plain HTML5, CSS, and Canvas.
 
 ## Gameplay
 
@@ -30,7 +36,7 @@ For detailed Senior PO analysis and design specifications, see [roadmap.md](file
 
 ### Progress Tracker
 - [x] **Phase 1: Stage-Based Progression System** (Stage 1–50+ scaling, Stage Clear screen, Milestone Rushes)
-- [ ] **Phase 2: Cozy Visual Refresh & Regional Airport Background** (Cute plane designs, cozy countryside aesthetic)
+- [x] **Phase 2: Cozy Visual Refresh & Regional Airport Background** (Cute plane designs, cozy countryside aesthetic)
 - [ ] **Phase 3: Aircraft Fleet Profiling & Variable Dynamics** (Small Propeller, Regional Jet, Heavy Cargo, Helicopter)
 - [ ] **Phase 4: Color-Coded Matching & Colorblind Accessibility** (Sunburst, Teal, Coral, Emerald Helipad + symbol matching)
 - [ ] **Phase 5: Web Audio API Procedural Sound System** (Engine hum, radio chimes, landing fanfare, warning blips)
