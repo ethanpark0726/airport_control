@@ -6,7 +6,7 @@
 ![License](https://img.shields.io/badge/License-MIT-06d6a0?style=flat-square)
 ![Version](https://img.shields.io/badge/Version-v2.0.0-9d4edd?style=flat-square)
 
-A warm, picturesque browser-based air traffic control game built with plain HTML5, CSS, and Canvas.
+A warm, picturesque browser-based air traffic control game set in a cozy regional airfield, built with plain HTML5, CSS, and Canvas.
 
 ## Gameplay
 
