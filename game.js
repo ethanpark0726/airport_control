@@ -4,6 +4,7 @@ const scoreEl = document.getElementById("score");
 const landedEl = document.getElementById("landed");
 const livesEl = document.getElementById("lives");
 const restartButton = document.getElementById("restart");
+const soundButton = document.getElementById("soundToggle");
 
 const TAU = Math.PI * 2;
 const state = {
@@ -229,6 +230,7 @@ function handlePointerDown(event) {
     state.selected = picked;
     state.drawing = true;
     state.drawnRoute = [{ x: picked.x, y: picked.y }];
+    if (typeof SoundManager !== "undefined") SoundManager.playSelect();
     if (canvas.setPointerCapture && event.pointerId !== undefined) {
       try { canvas.setPointerCapture(event.pointerId); } catch (_) {}
     }
@@ -263,6 +265,7 @@ function handlePointerMove(event) {
   const last = state.drawnRoute.at(-1);
   if (last && Math.hypot(x - last.x, y - last.y) < 8) return;
   state.drawnRoute.push({ x, y });
+  if (typeof SoundManager !== "undefined") SoundManager.playDrawTick();
   setDrawnRoute(state.selected, state.drawnRoute);
 }
 
@@ -301,6 +304,7 @@ function update(dt) {
     plane.safe = true;
   }
 
+  let hasProximityWarning = false;
   for (let i = 0; i < state.planes.length; i += 1) {
     for (let j = i + 1; j < state.planes.length; j += 1) {
       const a = state.planes[i];
@@ -313,8 +317,12 @@ function update(dt) {
       if (d < 70) {
         a.safe = false;
         b.safe = false;
+        hasProximityWarning = true;
       }
     }
+  }
+  if (hasProximityWarning && Math.floor(state.elapsed * 3) % 2 === 0) {
+    if (typeof SoundManager !== "undefined") SoundManager.playWarning();
   }
 
   state.planes = state.planes.filter((plane) => {
@@ -322,10 +330,12 @@ function update(dt) {
       state.score += 100;
       state.landed += 1;
       state.stageLanded += 1;
+      if (typeof SoundManager !== "undefined") SoundManager.playLandChime();
       if (state.stageLanded >= state.stageTarget && !state.stageCleared) {
         state.stageCleared = true;
         const config = getStageConfig(state.stage);
         state.score += state.stage * 500 + (config.isMilestone ? 1000 : 0);
+        if (typeof SoundManager !== "undefined") SoundManager.playStageClear();
       }
       updateHud();
       return false;
@@ -413,7 +423,10 @@ function crash() {
 
 function loseLife() {
   state.lives -= 1;
-  if (state.lives <= 0) state.gameOver = true;
+  if (state.lives <= 0) {
+    state.gameOver = true;
+    if (typeof SoundManager !== "undefined") SoundManager.playGameOver();
+  }
   updateHud();
 }
 
@@ -942,6 +955,11 @@ canvas.addEventListener("pointermove", handlePointerMove);
 window.addEventListener("pointerup", handlePointerUp);
 window.addEventListener("pointercancel", handlePointerUp);
 restartButton.addEventListener("click", reset);
+if (soundButton) {
+  soundButton.addEventListener("click", () => {
+    if (typeof SoundManager !== "undefined") SoundManager.toggleMute();
+  });
+}
 
 resize();
 selfCheck();
