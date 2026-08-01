@@ -76,18 +76,20 @@ By combining **Stage-based progression**, **Cute aircraft art style**, **Diverse
 - [ ] Implement cute vector aircraft models (Propeller, Commercial Jet, Cargo, Helicopter)
 - [ ] Add environmental micro-animations (wind sock, runway beacons, clouds)
 
-### Phase 3: Aircraft Fleet Profiling & Variable Dynamics ✈️
+### Phase 3: Web Audio API Sound & Music System 🔊 (In Progress)
+- [ ] Implement procedural Web Audio API synthesizer (`sound.js`)
+- [ ] Add ambient engine hum background music (BGM) with Mute/Unmute toggle button
+- [ ] Add sound effects for plane selection, route drawing, landing chime, warning alert, and stage clear fanfare
+
+### Phase 4: Aircraft Fleet Profiling & Variable Dynamics ✈️
 - [ ] Implement variable speeds, acceleration, and turn radii by plane type
 - [ ] Introduce Cargo Freighters (large collision box, slow) in Stage 3+
 - [ ] Introduce Helicopters with Helipad landing targets
 
-### Phase 4: Color-Coded Matching & Colorblind Accessibility 🎨
+### Phase 5: Color-Coded Matching & Colorblind Accessibility 🎨
 - [ ] Create HSL curated color theme for runways, helipads, and aircraft
 - [ ] Implement matching landing rules (Yellow plane -> Yellow runway, etc.)
 - [ ] Add geometric accessibility symbols (●, ▲, ★, ◆) on aircraft and runway markers
-
-### Phase 5: Web Audio API Sound System 🔊
-- [ ] Implement `sound.js` procedural sound synthesizer
 - [ ] Add selection, route drawing, landing chime, warning alert, and stage clear audio effects
 - [ ] Add audio toggle button on HUD
 

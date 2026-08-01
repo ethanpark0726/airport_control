@@ -37,4 +37,7 @@
 - Implemented Phase 1 Stage Progression System (`getStageConfig(stage)`), supporting 50+ procedurally scaled stages, stage clear overlays, ⭐⭐⭐ star ratings, and milestone rush hours.
 - Implemented Phase 2 Cozy Visual Refresh (`drawCozyEnvironment()`, `drawCutePlane()`, detailed asphalt runway, terminal tarmac, spinning windmill, windsock, and soft drifting clouds).
 - Completely removed legacy radar conic sweep line and radar grid circles from background, replacing them with manicured airfield grass textures.
-- Updated `README.md` header with Shields.io status, version (v2.0.0), license, and tech stack badges.
+- Removed unnecessary top-right tarmac apron and control tower structures per user feedback.
+- Implemented Phase 3 Web Audio API Sound & Music System (`sound.js`), adding zero-dependency procedural radio clicks, route drawing ticks, landing chimes, warning pulses, victory fanfares, and game over sounds.
+- Added `🔊 Sound` mute/unmute toggle button to HUD.
+- Bumped `README.md` version badge to `v2.2.0`.
