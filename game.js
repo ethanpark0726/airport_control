@@ -431,41 +431,95 @@ function drawCozyEnvironment() {
   const cx = state.width / 2;
   const cy = state.height / 2;
   const radius = Math.hypot(state.width, state.height);
+  const r = runway();
+  const points = runwayPoints(r);
 
   ctx.save();
 
-  // Cozy Airfield Grass Gradient
-  const bgGrad = ctx.createRadialGradient(cx, cy, 50, cx, cy, radius * 0.65);
-  bgGrad.addColorStop(0, "#19362a");
-  bgGrad.addColorStop(1, "#0d1f18");
+  // Rich Airfield Grass Meadow Base
+  const bgGrad = ctx.createRadialGradient(cx, cy, 60, cx, cy, radius * 0.7);
+  bgGrad.addColorStop(0, "#1d4031");
+  bgGrad.addColorStop(0.7, "#142d22");
+  bgGrad.addColorStop(1, "#0c1d16");
   ctx.fillStyle = bgGrad;
   ctx.fillRect(0, 0, state.width, state.height);
 
-  // Manicured Airfield Fairway Stripes
+  // Soft Organic Field Patch Texture
   ctx.fillStyle = "rgba(255, 255, 255, 0.015)";
-  const stripeWidth = 60;
-  for (let x = -state.height; x < state.width + state.height; x += stripeWidth * 2) {
+  ctx.beginPath();
+  ctx.arc(state.width * 0.2, state.height * 0.3, 180, 0, TAU);
+  ctx.arc(state.width * 0.8, state.height * 0.7, 240, 0, TAU);
+  ctx.fill();
+
+  // Perimeter Tree Line Clusters (Corner Foliage)
+  ctx.fillStyle = "rgba(13, 31, 23, 0.75)";
+  const trees = [
+    { x: 40, y: 50, r: 45 }, { x: 90, y: 35, r: 35 }, { x: 30, y: 110, r: 40 },
+    { x: state.width - 40, y: state.height - 50, r: 50 }, { x: state.width - 90, y: state.height - 30, r: 40 },
+    { x: 60, y: state.height - 60, r: 48 }, { x: 110, y: state.height - 40, r: 38 }
+  ];
+  for (const tree of trees) {
     ctx.beginPath();
-    ctx.moveTo(x, 0);
-    ctx.lineTo(x + stripeWidth, 0);
-    ctx.lineTo(x + stripeWidth - state.height * 0.4, state.height);
-    ctx.lineTo(x - state.height * 0.4, state.height);
+    ctx.arc(tree.x, tree.y, tree.r, 0, TAU);
     ctx.fill();
   }
 
-  // Terminal Building & Apron Tarmac (Top Right)
-  ctx.fillStyle = "rgba(12, 28, 22, 0.6)";
-  ctx.fillRect(state.width - 160, 20, 140, 80);
-  ctx.strokeStyle = "rgba(88, 255, 209, 0.2)";
+  // Tarmac Apron & Taxiway Connecting to Runway
+  ctx.save();
+  ctx.fillStyle = "#1d2924";
+  ctx.strokeStyle = "rgba(255, 231, 118, 0.35)";
   ctx.lineWidth = 1.5;
-  ctx.strokeRect(state.width - 160, 20, 140, 80);
-  ctx.fillStyle = "rgba(88, 255, 209, 0.4)";
-  ctx.font = "600 10px ui-monospace, SFMono-Regular, Consolas, monospace";
-  ctx.fillText("REGIONAL TERMINAL", state.width - 90, 40);
+
+  // Taxiway Strip from Apron to Runway
+  ctx.beginPath();
+  ctx.moveTo(r.x + r.length * 0.1, r.y - r.width);
+  ctx.lineTo(state.width - 150, 90);
+  ctx.lineTo(state.width - 120, 90);
+  ctx.lineTo(r.x + r.length * 0.25, r.y - r.width);
+  ctx.closePath();
+  ctx.fill();
+
+  // Parking Apron Tarmac (Top Right)
+  ctx.beginPath();
+  ctx.roundRect(state.width - 165, 20, 145, 75, 8);
+  ctx.fill();
+  ctx.stroke();
+
+  // Yellow Taxiway Guide Line
+  ctx.setLineDash([6, 6]);
+  ctx.beginPath();
+  ctx.moveTo(r.x + r.length * 0.17, r.y - r.width / 2);
+  ctx.quadraticCurveTo(state.width - 140, r.y * 0.6, state.width - 95, 55);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Parked Aircraft Silhouettes on Apron
+  ctx.fillStyle = "rgba(88, 255, 209, 0.35)";
+  drawParkedPlaneSilhouette(state.width - 130, 45, -0.4);
+  drawParkedPlaneSilhouette(state.width - 65, 45, -0.4);
+  ctx.restore();
+
+  // Control Tower Structure (Top Right of Apron)
+  const tx = state.width - 175;
+  const ty = 40;
+  ctx.fillStyle = "#13211b";
+  ctx.strokeStyle = "rgba(159, 255, 220, 0.4)";
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.arc(tx, ty, 12, 0, TAU);
+  ctx.fill();
+  ctx.stroke();
+
+  // Tower Beacon Pulsing Light
+  const beaconGlow = (Math.sin(state.elapsed * 4) + 1) / 2;
+  ctx.fillStyle = `rgba(88, 255, 209, ${0.4 + beaconGlow * 0.5})`;
+  ctx.beginPath();
+  ctx.arc(tx, ty, 4, 0, TAU);
+  ctx.fill();
 
   // Animated Windmill (Top Left)
   const wx = 80;
-  const wy = 90;
+  const wy = 85;
   ctx.strokeStyle = "rgba(231,255,246,0.3)";
   ctx.lineWidth = 2;
   ctx.beginPath();
@@ -487,10 +541,29 @@ function drawCozyEnvironment() {
   }
   ctx.restore();
 
+  // Animated Windsock near Approach
+  const wsx = points.approach.x + 35;
+  const wsy = points.approach.y - 25;
+  ctx.strokeStyle = "rgba(231,255,246,0.5)";
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(wsx, wsy + 16);
+  ctx.lineTo(wsx, wsy);
+  ctx.stroke();
+  const sockAngle = Math.sin(state.elapsed * 2) * 0.15 + 0.3;
+  ctx.save();
+  ctx.translate(wsx, wsy);
+  ctx.rotate(sockAngle);
+  ctx.fillStyle = "#ff7b54";
+  ctx.fillRect(0, -4, 14, 8);
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(4, -4, 4, 8);
+  ctx.restore();
+
   // Drifting Soft Clouds
-  ctx.fillStyle = "rgba(255, 255, 255, 0.035)";
+  ctx.fillStyle = "rgba(255, 255, 255, 0.04)";
   for (let i = 0; i < 3; i += 1) {
-    const cloudX = ((state.elapsed * 14 + i * 280) % (state.width + 200)) - 100;
+    const cloudX = ((state.elapsed * 12 + i * 280) % (state.width + 200)) - 100;
     const cloudY = 120 + i * 160;
     ctx.beginPath();
     ctx.arc(cloudX, cloudY, 32, 0, TAU);
@@ -499,6 +572,17 @@ function drawCozyEnvironment() {
     ctx.fill();
   }
 
+  ctx.restore();
+}
+
+function drawParkedPlaneSilhouette(x, y, angle) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(angle);
+  ctx.beginPath();
+  ctx.roundRect(-3, -10, 6, 20, 2);
+  ctx.roundRect(-8, -2, 16, 4, 1);
+  ctx.fill();
   ctx.restore();
 }
 

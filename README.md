@@ -4,7 +4,7 @@
 [![Deploy to GitHub Pages](https://github.com/ethanpark0726/airport_control/actions/workflows/pages.yml/badge.svg)](https://github.com/ethanpark0726/airport_control/actions/workflows/pages.yml)
 ![Tech Stack](https://img.shields.io/badge/Tech-HTML5%20Canvas%20%7C%20JS-58ffd1?style=flat-square)
 ![License](https://img.shields.io/badge/License-MIT-06d6a0?style=flat-square)
-![Version](https://img.shields.io/badge/Version-v2.0.0-9d4edd?style=flat-square)
+![Version](https://img.shields.io/badge/Version-v2.1.0-9d4edd?style=flat-square)
 
 A warm, picturesque browser-based air traffic control game set in a cozy regional airfield, built with plain HTML5, CSS, and Canvas.
 
@@ -44,6 +44,7 @@ For detailed Senior PO analysis and design specifications, see [roadmap.md](file
 
 ## Development Rules
 
-- Every development change must update `README.md` when behavior, controls, setup, or deployment changes.
+- Every development change must update `README.md` and bump the Version badge (`vX.Y.Z`).
 - Every development change must update `CHANGELOG.md`.
-- GitHub Actions CI workflow enforces that code changes also update `README.md` and `CHANGELOG.md`.
+- **Mandatory Versioning & Documentation Rule**: Every feature branch commit/merge MUST bump the Version badge in `README.md` and update `CHANGELOG.md`.
+- GitHub Actions CI workflow enforces that code changes also update `README.md` (including version badge) and `CHANGELOG.md`.

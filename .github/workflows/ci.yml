@@ -50,9 +50,15 @@ jobs:
             if [ -n "$MISSING" ]; then
               echo "::error::Code changes detected, but the following required documentation files were not updated:$MISSING"
               exit 1
-            else
-              echo "✅ Verification successful: Both CHANGELOG.md and README.md were updated alongside code changes."
             fi
+
+            # Verify version badge in README.md was bumped
+            if ! git diff $BASE HEAD -- README.md | grep -q 'Version-v'; then
+              echo "::error::Code changes detected, but README.md Version badge was not bumped!"
+              exit 1
+            fi
+
+            echo "✅ Verification successful: Both CHANGELOG.md and README.md (with Version bump) were updated alongside code changes."
           else
             echo "No code files were modified in this commit/PR. Doc check passed."
           fi
