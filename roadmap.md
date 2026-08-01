@@ -10,12 +10,13 @@ By combining **Stage-based progression**, **Cute aircraft art style**, **Diverse
 
 ## 💡 Senior Product Owner (PO) Evaluation & Refinement of Proposed Ideas
 
-### 1. Stage-Based Game Loop
+### 1. Stage-Based Game Loop (50+ Stages)
 * **PO Assessment**: **Highly Recommended**. Endless modes often induce fatigue. Stage milestones provide distinct victory beats, reward dopamine, and give players achievable goals.
 * **PO Refinement**:
-  - Implement 5 initial stages with escalating complexity (Stage 1: 8 landings → Stage 2: 12 landings → Stage 3: 15 landings + multi-speed planes → Stage 4: Color matching → Stage 5: Rush hour).
+  - Implement **50+ Procedurally Scaled Stages** (Stage 1: 8 landings → Stage 10: 26 landings → Stage 25: 56 landings → Stage 50: 106 landings).
+  - Every 5th Stage (Stage 5, 10, 15... 50) triggers a **Heavy Traffic Milestone** with special badges and bonus multipliers.
   - Add a **Stage Clear** bonus screen with landing efficiency stars (1-3 stars based on zero collisions and speed).
-  - Unlock **Endless High-Score Mode** upon clearing Stage 5.
+  - Unlock **Endless High-Score Mode** upon clearing Stage 50+.
 
 ### 2. Visual Overhaul: Cozy Regional Airport & Cute Aircraft
 * **PO Assessment**: **Highly Recommended**. Shifting to a bright, cozy, countryside aesthetic (soft green fields, charming terminal, windmills, warm lighting) increases player retention and emotional attachment.
