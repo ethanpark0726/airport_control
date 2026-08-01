@@ -24,6 +24,18 @@ Push to `main`. The GitHub Actions workflow at `.github/workflows/pages.yml` dep
 
 No build step is needed.
 
+## Product Roadmap & Progress
+
+For detailed Senior PO analysis and design specifications, see [roadmap.md](file:///c:/Users/ethan/Downloads/airport_control/roadmap.md).
+
+### Progress Tracker
+- [ ] **Phase 1: Stage-Based Progression System** (Stage 1-5, Stage Clear screen, Stage Objectives)
+- [ ] **Phase 2: Cozy Visual Refresh & Regional Airport Background** (Cute plane designs, cozy countryside aesthetic)
+- [ ] **Phase 3: Aircraft Fleet Profiling & Variable Dynamics** (Small Propeller, Regional Jet, Heavy Cargo, Helicopter)
+- [ ] **Phase 4: Color-Coded Matching & Colorblind Accessibility** (Sunburst, Teal, Coral, Emerald Helipad + symbol matching)
+- [ ] **Phase 5: Web Audio API Procedural Sound System** (Engine hum, radio chimes, landing fanfare, warning blips)
+- [ ] **Phase 6: Active Items, Skills & Weather Hazards** (Freeze Time, Speed Boost, Emergency Reroute, Wind Hazards)
+
 ## Development Rules
 
 - Every development change must update `README.md` when behavior, controls, setup, or deployment changes.
