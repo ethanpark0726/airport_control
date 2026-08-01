@@ -419,7 +419,7 @@ function loseLife() {
 
 function draw() {
   ctx.clearRect(0, 0, state.width, state.height);
-  drawRadar();
+  drawCozyEnvironment();
   drawRunway();
   for (const ping of state.pings) drawPing(ping);
   for (const plane of state.planes) drawPlane(plane);
@@ -427,16 +427,25 @@ function draw() {
   if (state.gameOver) drawGameOver();
 }
 
-function drawRadar() {
+function drawCozyEnvironment() {
   const cx = state.width / 2;
   const cy = state.height / 2;
   const radius = Math.hypot(state.width, state.height);
-  const sweep = (state.elapsed * 0.72) % TAU;
+  const sweep = (state.elapsed * 0.65) % TAU;
 
   ctx.save();
-  ctx.strokeStyle = "rgba(122,255,205,0.12)";
+
+  // Cozy Airfield Grass Gradient
+  const bgGrad = ctx.createRadialGradient(cx, cy, 50, cx, cy, radius * 0.65);
+  bgGrad.addColorStop(0, "#19362a");
+  bgGrad.addColorStop(1, "#0d1f18");
+  ctx.fillStyle = bgGrad;
+  ctx.fillRect(0, 0, state.width, state.height);
+
+  // Soft Radar Grid Lines
+  ctx.strokeStyle = "rgba(159, 255, 220, 0.07)";
   ctx.lineWidth = 1;
-  for (let r = 90; r < radius; r += 90) {
+  for (let r = 100; r < radius; r += 100) {
     ctx.beginPath();
     ctx.arc(cx, cy, r, 0, TAU);
     ctx.stroke();
@@ -448,20 +457,61 @@ function drawRadar() {
     ctx.stroke();
   }
 
-  const glow = ctx.createRadialGradient(cx, cy, 20, cx, cy, radius * 0.55);
-  glow.addColorStop(0, "rgba(88,255,209,0.08)");
-  glow.addColorStop(1, "rgba(88,255,209,0)");
-  ctx.fillStyle = glow;
-  ctx.fillRect(0, 0, state.width, state.height);
-
-  ctx.rotate(0);
-  const gradient = ctx.createConicGradient(sweep - 0.24, cx, cy);
+  // Radar Conic Sweep
+  const gradient = ctx.createConicGradient(sweep - 0.22, cx, cy);
   gradient.addColorStop(0, "rgba(88,255,209,0)");
-  gradient.addColorStop(0.04, "rgba(88,255,209,0.16)");
+  gradient.addColorStop(0.04, "rgba(88,255,209,0.12)");
   gradient.addColorStop(0.08, "rgba(88,255,209,0)");
   gradient.addColorStop(1, "rgba(88,255,209,0)");
   ctx.fillStyle = gradient;
   ctx.fillRect(0, 0, state.width, state.height);
+
+  // Terminal Building & Apron Tarmac (Top Right)
+  ctx.fillStyle = "rgba(12, 28, 22, 0.6)";
+  ctx.fillRect(state.width - 160, 20, 140, 80);
+  ctx.strokeStyle = "rgba(88, 255, 209, 0.2)";
+  ctx.lineWidth = 1.5;
+  ctx.strokeRect(state.width - 160, 20, 140, 80);
+  ctx.fillStyle = "rgba(88, 255, 209, 0.4)";
+  ctx.font = "600 10px ui-monospace, SFMono-Regular, Consolas, monospace";
+  ctx.fillText("REGIONAL TERMINAL", state.width - 90, 40);
+
+  // Animated Windmill (Top Left)
+  const wx = 80;
+  const wy = 90;
+  ctx.strokeStyle = "rgba(231,255,246,0.3)";
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(wx - 8, wy + 24);
+  ctx.lineTo(wx, wy);
+  ctx.lineTo(wx + 8, wy + 24);
+  ctx.stroke();
+  ctx.save();
+  ctx.translate(wx, wy);
+  ctx.rotate(state.elapsed * 1.5);
+  ctx.strokeStyle = "rgba(255,231,118,0.5)";
+  ctx.lineWidth = 2;
+  for (let i = 0; i < 3; i += 1) {
+    ctx.rotate(TAU / 3);
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.lineTo(0, -18);
+    ctx.stroke();
+  }
+  ctx.restore();
+
+  // Drifting Soft Clouds
+  ctx.fillStyle = "rgba(255, 255, 255, 0.035)";
+  for (let i = 0; i < 3; i += 1) {
+    const cloudX = ((state.elapsed * 14 + i * 280) % (state.width + 200)) - 100;
+    const cloudY = 120 + i * 160;
+    ctx.beginPath();
+    ctx.arc(cloudX, cloudY, 32, 0, TAU);
+    ctx.arc(cloudX + 26, cloudY - 10, 26, 0, TAU);
+    ctx.arc(cloudX + 50, cloudY, 28, 0, TAU);
+    ctx.fill();
+  }
+
   ctx.restore();
 }
 
@@ -471,56 +521,70 @@ function drawRunway() {
   ctx.save();
   ctx.translate(r.x, r.y);
   ctx.rotate(r.angle);
-  ctx.strokeStyle = "rgba(255,231,118,0.34)";
+
+  // Approach Centerline Guide
+  ctx.strokeStyle = "rgba(255,231,118,0.35)";
   ctx.lineWidth = 1.5;
   ctx.setLineDash([12, 12]);
   ctx.beginPath();
   ctx.moveTo(-r.length * 1.25, 0);
   ctx.lineTo(r.length * 1.25, 0);
   ctx.stroke();
-
-  ctx.strokeStyle = "rgba(255,231,118,0.2)";
-  ctx.beginPath();
-  ctx.moveTo(-r.length * 1.25, -r.width * 2.6);
-  ctx.lineTo(-r.length / 2, -r.width / 2);
-  ctx.lineTo(r.length / 2, -r.width / 2);
-  ctx.moveTo(-r.length * 1.25, r.width * 2.6);
-  ctx.lineTo(-r.length / 2, r.width / 2);
-  ctx.lineTo(r.length / 2, r.width / 2);
-  ctx.stroke();
   ctx.setLineDash([]);
 
-  ctx.fillStyle = "rgba(210,255,241,0.16)";
-  ctx.strokeStyle = "rgba(231,255,246,0.55)";
+  // Asphalt Runway Main Strip
+  ctx.fillStyle = "#1e2824";
+  ctx.strokeStyle = "rgba(231,255,246,0.6)";
   ctx.lineWidth = 2;
   ctx.fillRect(-r.length / 2, -r.width / 2, r.length, r.width);
-  ctx.fillStyle = "rgba(88,255,209,0.24)";
-  ctx.fillRect(-r.length / 2 + 10, -r.width / 2 + 4, r.length * 0.38, r.width - 8);
   ctx.strokeRect(-r.length / 2, -r.width / 2, r.length, r.width);
-  ctx.setLineDash([18, 16]);
+
+  // Concrete Threshold Piano Keys
+  ctx.fillStyle = "rgba(240, 255, 249, 0.75)";
+  const stripeWidth = 3;
+  const stripeHeight = r.width * 0.7;
+  for (let i = -3; i <= 3; i += 1) {
+    if (i === 0) continue;
+    ctx.fillRect(-r.length / 2 + 8, i * 3.5 - stripeHeight / 6, 12, stripeWidth);
+    ctx.fillRect(r.length / 2 - 20, i * 3.5 - stripeHeight / 6, 12, stripeWidth);
+  }
+
+  // Yellow Centerline Dashes
+  ctx.strokeStyle = "#ffe776";
+  ctx.lineWidth = 2;
+  ctx.setLineDash([10, 10]);
   ctx.beginPath();
-  ctx.moveTo(-r.length / 2 + 20, 0);
-  ctx.lineTo(r.length / 2 - 20, 0);
-  ctx.strokeStyle = "rgba(231,255,246,0.7)";
+  ctx.moveTo(-r.length / 2 + 26, 0);
+  ctx.lineTo(r.length / 2 - 26, 0);
   ctx.stroke();
   ctx.setLineDash([]);
-  ctx.fillStyle = "rgba(159,255,240,0.9)";
-  ctx.font = "700 10px ui-monospace, SFMono-Regular, Consolas, monospace";
+
+  // Green Landing Touchdown Zone Box
+  ctx.fillStyle = "rgba(88,255,209,0.22)";
+  ctx.strokeStyle = "rgba(88,255,209,0.85)";
+  ctx.lineWidth = 2;
+  ctx.fillRect(-r.length / 2 + 10, -r.width / 2 + 4, r.length * 0.38, r.width - 8);
+  ctx.strokeRect(-r.length / 2 + 10, -r.width / 2 + 4, r.length * 0.38, r.width - 8);
+
+  // Text & Arrow Guidance
+  ctx.fillStyle = "#9ffff0";
+  ctx.font = "700 11px ui-monospace, SFMono-Regular, Consolas, monospace";
   ctx.textAlign = "center";
   ctx.fillText("LAND", -r.length * 0.31, -r.width * 0.72);
   drawRunwayArrow(-r.length * 0.42, r.width * 0.72, 18);
   drawRunwayArrow(-r.length * 0.24, r.width * 0.72, 18);
   ctx.restore();
 
+  // Approach Marker Text
   ctx.save();
-  ctx.fillStyle = "rgba(255,231,118,0.9)";
+  ctx.fillStyle = "rgba(255,231,118,0.95)";
   ctx.font = "700 12px ui-monospace, SFMono-Regular, Consolas, monospace";
   ctx.textAlign = "center";
   ctx.fillText("APPROACH", points.approach.x, points.approach.y - 12);
   ctx.beginPath();
   ctx.moveTo(points.approach.x - Math.cos(r.angle) * 12, points.approach.y - Math.sin(r.angle) * 12);
   ctx.lineTo(points.approach.x + Math.cos(r.angle) * 12, points.approach.y + Math.sin(r.angle) * 12);
-  ctx.strokeStyle = "rgba(255,231,118,0.82)";
+  ctx.strokeStyle = "rgba(255,231,118,0.85)";
   ctx.stroke();
   ctx.restore();
 }
@@ -528,8 +592,8 @@ function drawRunway() {
 function drawRunwayArrow(x, y, size) {
   ctx.save();
   ctx.translate(x, y);
-  ctx.strokeStyle = "rgba(159,255,240,0.82)";
-  ctx.lineWidth = 1.4;
+  ctx.strokeStyle = "rgba(159,255,240,0.85)";
+  ctx.lineWidth = 1.6;
   ctx.beginPath();
   ctx.moveTo(-size / 2, 0);
   ctx.lineTo(size / 2, 0);
@@ -543,7 +607,7 @@ function drawRunwayArrow(x, y, size) {
 function drawPing(ping) {
   ctx.save();
   ctx.globalAlpha = 1 - ping.age / 0.8;
-  ctx.strokeStyle = "rgba(88,255,209,0.8)";
+  ctx.strokeStyle = "rgba(88,255,209,0.85)";
   ctx.lineWidth = 2;
   ctx.beginPath();
   ctx.arc(ping.x, ping.y, 8 + ping.age * 42, 0, TAU);
@@ -554,31 +618,85 @@ function drawPing(ping) {
 function drawPlane(plane) {
   const selected = plane === state.selected;
   ctx.save();
+
+  // Drop Shadow for Depth
+  ctx.save();
+  ctx.translate(plane.x + 5, plane.y + 7);
+  ctx.rotate(plane.angle);
+  ctx.fillStyle = "rgba(0, 0, 0, 0.28)";
+  ctx.beginPath();
+  ctx.ellipse(0, 0, 14, 5, 0, 0, TAU);
+  ctx.fill();
+  ctx.restore();
+
+  // Selected Halo Ring
+  if (selected) {
+    ctx.save();
+    ctx.translate(plane.x, plane.y);
+    ctx.strokeStyle = "#ffe776";
+    ctx.lineWidth = 2;
+    ctx.shadowBlur = 16;
+    ctx.shadowColor = "#ffe776";
+    ctx.beginPath();
+    ctx.arc(0, 0, 22, 0, TAU);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  // Draw Cute Airplane Body
+  ctx.save();
   ctx.translate(plane.x, plane.y);
   ctx.rotate(plane.angle);
 
-  ctx.strokeStyle = selected ? "rgba(255,231,118,1)" : plane.safe ? "rgba(88,255,209,0.82)" : "rgba(255,94,115,0.95)";
-  ctx.fillStyle = selected ? "rgba(255,231,118,0.34)" : plane.safe ? "rgba(88,255,209,0.2)" : "rgba(255,94,115,0.24)";
-  ctx.lineWidth = 2;
-  ctx.shadowBlur = selected || !plane.safe ? 18 : 10;
-  ctx.shadowColor = ctx.strokeStyle;
+  const bodyColor = selected ? "#ffe776" : plane.safe ? "#58ffd1" : "#ff5e73";
+  const strokeColor = selected ? "#ffffff" : plane.safe ? "#e7fff6" : "#ffd0d6";
 
+  ctx.fillStyle = bodyColor;
+  ctx.strokeStyle = strokeColor;
+  ctx.lineWidth = 2;
+
+  // Main Rounded Wings
   ctx.beginPath();
-  ctx.moveTo(15, 0);
-  ctx.lineTo(-11, -8);
-  ctx.lineTo(-5, 0);
-  ctx.lineTo(-11, 8);
-  ctx.closePath();
+  ctx.roundRect(-4, -15, 8, 30, 4);
   ctx.fill();
   ctx.stroke();
 
+  // Tail Stabilizer
+  ctx.beginPath();
+  ctx.roundRect(-12, -7, 5, 14, 2);
+  ctx.fill();
+  ctx.stroke();
+
+  // Fuselage (Capsule Shape)
+  ctx.beginPath();
+  ctx.ellipse(0, 0, 15, 6, 0, 0, TAU);
+  ctx.fill();
+  ctx.stroke();
+
+  // Cockpit Glass Sheen
+  ctx.fillStyle = "#74f0ff";
+  ctx.beginPath();
+  ctx.ellipse(5, 0, 4, 3, 0, 0, TAU);
+  ctx.fill();
+
+  // Animated Spinning Propeller Nose
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.75)";
+  ctx.lineWidth = 1.5;
+  const propAnim = Math.sin(state.elapsed * 35) * 6;
+  ctx.beginPath();
+  ctx.moveTo(16, -propAnim);
+  ctx.lineTo(16, propAnim);
+  ctx.stroke();
+
   ctx.restore();
+
+  // Flight Route & Hint
   ctx.save();
   if (selected && plane.route.length) drawLandingRoute(plane);
   else drawTargetLine(plane, selected);
-  ctx.fillStyle = plane.safe ? "rgba(231,255,246,0.74)" : "rgba(255,130,145,0.9)";
-  ctx.font = "12px ui-monospace, SFMono-Regular, Consolas, monospace";
-  ctx.fillText(`${Math.round(plane.speed)}kt`, plane.x + 16, plane.y - 14);
+  ctx.fillStyle = plane.safe ? "rgba(231,255,246,0.85)" : "rgba(255,130,145,0.95)";
+  ctx.font = "700 12px ui-monospace, SFMono-Regular, Consolas, monospace";
+  ctx.fillText(`${Math.round(plane.speed)}kt`, plane.x + 18, plane.y - 14);
   if (selected) drawLandingHint(plane);
   ctx.restore();
 }
