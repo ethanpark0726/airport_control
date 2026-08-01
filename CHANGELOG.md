@@ -36,4 +36,5 @@
 - Standardized git workflow to use `feature/*` branches merged into `main`.
 - Implemented Phase 1 Stage Progression System (`getStageConfig(stage)`), supporting 50+ procedurally scaled stages, stage clear overlays, ⭐⭐⭐ star ratings, and milestone rush hours.
 - Implemented Phase 2 Cozy Visual Refresh (`drawCozyEnvironment()`, `drawCutePlane()`, detailed asphalt runway, terminal tarmac, spinning windmill, windsock, and soft drifting clouds).
+- Completely removed legacy radar conic sweep line and radar grid circles from background, replacing them with manicured airfield grass textures.
 - Updated `README.md` header with Shields.io status, version (v2.0.0), license, and tech stack badges.

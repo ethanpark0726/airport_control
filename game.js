@@ -431,7 +431,6 @@ function drawCozyEnvironment() {
   const cx = state.width / 2;
   const cy = state.height / 2;
   const radius = Math.hypot(state.width, state.height);
-  const sweep = (state.elapsed * 0.65) % TAU;
 
   ctx.save();
 
@@ -442,29 +441,17 @@ function drawCozyEnvironment() {
   ctx.fillStyle = bgGrad;
   ctx.fillRect(0, 0, state.width, state.height);
 
-  // Soft Radar Grid Lines
-  ctx.strokeStyle = "rgba(159, 255, 220, 0.07)";
-  ctx.lineWidth = 1;
-  for (let r = 100; r < radius; r += 100) {
+  // Manicured Airfield Fairway Stripes
+  ctx.fillStyle = "rgba(255, 255, 255, 0.015)";
+  const stripeWidth = 60;
+  for (let x = -state.height; x < state.width + state.height; x += stripeWidth * 2) {
     ctx.beginPath();
-    ctx.arc(cx, cy, r, 0, TAU);
-    ctx.stroke();
+    ctx.moveTo(x, 0);
+    ctx.lineTo(x + stripeWidth, 0);
+    ctx.lineTo(x + stripeWidth - state.height * 0.4, state.height);
+    ctx.lineTo(x - state.height * 0.4, state.height);
+    ctx.fill();
   }
-  for (let a = 0; a < TAU; a += Math.PI / 12) {
-    ctx.beginPath();
-    ctx.moveTo(cx, cy);
-    ctx.lineTo(cx + Math.cos(a) * radius, cy + Math.sin(a) * radius);
-    ctx.stroke();
-  }
-
-  // Radar Conic Sweep
-  const gradient = ctx.createConicGradient(sweep - 0.22, cx, cy);
-  gradient.addColorStop(0, "rgba(88,255,209,0)");
-  gradient.addColorStop(0.04, "rgba(88,255,209,0.12)");
-  gradient.addColorStop(0.08, "rgba(88,255,209,0)");
-  gradient.addColorStop(1, "rgba(88,255,209,0)");
-  ctx.fillStyle = gradient;
-  ctx.fillRect(0, 0, state.width, state.height);
 
   // Terminal Building & Apron Tarmac (Top Right)
   ctx.fillStyle = "rgba(12, 28, 22, 0.6)";
