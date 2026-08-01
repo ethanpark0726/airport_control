@@ -31,3 +31,6 @@
 - Calibrated mobile touch input by adding DPR/bounding rect scaling, removing initial touch-offset jumps, enabling `setPointerCapture`, and setting `viewport-fit` meta properties.
 - Recorded the rule that every development change must keep `README.md` and `CHANGELOG.md` updated.
 - Added GitHub Actions CI check workflow (`ci.yml`) to enforce that code changes also update `README.md` and `CHANGELOG.md`.
+- Added Senior PO Product Roadmap (`roadmap.md`) defining 6 phases (Stages, Cozy Art, Aircraft Profiles, Color-Coded Runways, Audio Synthesizer, Active Skills).
+- Updated `README.md` with Roadmap progress tracker checkboxes.
+- Standardized git workflow to use `feature/*` branches merged into `main`.
