@@ -15,6 +15,10 @@ const state = {
   spawnIn: 0,
   score: 0,
   landed: 0,
+  stage: 1,
+  stageLanded: 0,
+  stageTarget: 8,
+  stageCleared: false,
   lives: 3,
   selected: null,
   drawing: false,
@@ -25,6 +29,16 @@ const state = {
   planes: [],
   pings: [],
 };
+
+function getStageConfig(stageNumber) {
+  const stage = Math.max(1, stageNumber || 1);
+  const target = Math.floor(8 + (stage - 1) * 2);
+  const spawnInterval = Math.max(0.9, 3.6 - (stage - 1) * 0.05);
+  const speedMin = Math.min(65, 44 + (stage - 1) * 0.5);
+  const speedMax = Math.min(105, 72 + (stage - 1) * 0.7);
+  const isMilestone = stage % 5 === 0;
+  return { stage, target, spawnInterval, speedMin, speedMax, isMilestone };
+}
 
 function resize() {
   state.dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
@@ -60,12 +74,17 @@ function runwayPoints(r = runway()) {
 }
 
 function reset() {
+  const config = getStageConfig(1);
   Object.assign(state, {
     last: performance.now(),
     elapsed: 0,
     spawnIn: 0.4,
     score: 0,
     landed: 0,
+    stage: 1,
+    stageLanded: 0,
+    stageTarget: config.target,
+    stageCleared: false,
     lives: 3,
     selected: null,
     drawing: false,
@@ -78,8 +97,10 @@ function reset() {
 }
 
 function updateHud() {
+  const stageEl = document.getElementById("stage");
+  if (stageEl) stageEl.textContent = state.stage;
   scoreEl.textContent = state.score;
-  landedEl.textContent = state.landed;
+  landedEl.textContent = `${state.stageLanded} / ${state.stageTarget}`;
   livesEl.textContent = state.lives;
 }
 
@@ -91,7 +112,8 @@ function spawnPlane() {
   const r = runway();
   const target = { x: r.x + (Math.random() - 0.5) * r.length * 0.8, y: r.y + (Math.random() - 0.5) * r.width * 8 };
   const angle = Math.atan2(target.y - y, target.x - x);
-  const speed = 46 + Math.random() * 28;
+  const config = getStageConfig(state.stage);
+  const speed = config.speedMin + Math.random() * (config.speedMax - config.speedMin);
   state.planes.push({
     id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now() + Math.random()),
     x,
@@ -194,6 +216,10 @@ function handlePointerDown(event) {
     reset();
     return;
   }
+  if (state.stageCleared) {
+    advanceStage();
+    return;
+  }
   if (state.selected && !state.planes.includes(state.selected)) {
     state.selected = null;
   }
@@ -218,8 +244,20 @@ function handlePointerDown(event) {
   }
 }
 
+function advanceStage() {
+  state.stage += 1;
+  const config = getStageConfig(state.stage);
+  state.stageLanded = 0;
+  state.stageTarget = config.target;
+  state.stageCleared = false;
+  state.planes = [];
+  state.selected = null;
+  state.spawnIn = 0.5;
+  updateHud();
+}
+
 function handlePointerMove(event) {
-  if (!state.drawing || !state.selected || state.gameOver) return;
+  if (!state.drawing || !state.selected || state.gameOver || state.stageCleared) return;
   event.preventDefault();
   const { x, y } = pointerPosition(event);
   const last = state.drawnRoute.at(-1);
@@ -239,10 +277,14 @@ function handlePointerUp(event) {
 function update(dt) {
   if (state.gameOver) return;
   state.elapsed += dt;
-  state.spawnIn -= dt;
-  if (state.spawnIn <= 0) {
-    spawnPlane();
-    state.spawnIn = Math.max(1.1, 4.2 - state.elapsed * 0.045);
+
+  if (!state.stageCleared) {
+    state.spawnIn -= dt;
+    if (state.spawnIn <= 0) {
+      spawnPlane();
+      const config = getStageConfig(state.stage);
+      state.spawnIn = Math.max(0.9, config.spawnInterval - Math.min(1.5, state.elapsed * 0.005));
+    }
   }
 
   const r = runway();
@@ -279,6 +321,12 @@ function update(dt) {
     if (canLand(plane, r)) {
       state.score += 100;
       state.landed += 1;
+      state.stageLanded += 1;
+      if (state.stageLanded >= state.stageTarget && !state.stageCleared) {
+        state.stageCleared = true;
+        const config = getStageConfig(state.stage);
+        state.score += state.stage * 500 + (config.isMilestone ? 1000 : 0);
+      }
       updateHud();
       return false;
     }
@@ -375,6 +423,7 @@ function draw() {
   drawRunway();
   for (const ping of state.pings) drawPing(ping);
   for (const plane of state.planes) drawPlane(plane);
+  if (state.stageCleared && !state.gameOver) drawStageClear();
   if (state.gameOver) drawGameOver();
 }
 
@@ -608,6 +657,39 @@ function drawGameOver() {
   ctx.restore();
 }
 
+function drawStageClear() {
+  const config = getStageConfig(state.stage);
+  const nextConfig = getStageConfig(state.stage + 1);
+  ctx.save();
+  ctx.fillStyle = "rgba(4, 18, 14, 0.84)";
+  ctx.fillRect(0, 0, state.width, state.height);
+  ctx.textAlign = "center";
+
+  ctx.fillStyle = "#58ffd1";
+  ctx.font = "700 38px system-ui, sans-serif";
+  ctx.fillText(`STAGE ${state.stage} CLEAR!`, state.width / 2, state.height / 2 - 48);
+
+  if (config.isMilestone) {
+    ctx.fillStyle = "#ffe776";
+    ctx.font = "700 16px ui-monospace, SFMono-Regular, Consolas, monospace";
+    ctx.fillText("🏆 HEAVY TRAFFIC MILESTONE ACHIEVED! (+1000 Bonus)", state.width / 2, state.height / 2 - 16);
+  }
+
+  const stars = state.lives === 3 ? "⭐⭐⭐ PERFECT PERFORMANCE!" : state.lives === 2 ? "⭐⭐ GREAT JOB!" : "⭐ STAGE CLEARED!";
+  ctx.fillStyle = "#e7fff6";
+  ctx.font = "600 20px system-ui, sans-serif";
+  ctx.fillText(stars, state.width / 2, state.height / 2 + 16);
+
+  ctx.fillStyle = "rgba(231,255,246,0.85)";
+  ctx.font = "15px ui-monospace, SFMono-Regular, Consolas, monospace";
+  ctx.fillText(`Next Target: ${nextConfig.target} Landings`, state.width / 2, state.height / 2 + 54);
+
+  ctx.fillStyle = "#58ffd1";
+  ctx.font = "700 17px system-ui, sans-serif";
+  ctx.fillText(`Tap screen to start Stage ${state.stage + 1}`, state.width / 2, state.height / 2 + 96);
+  ctx.restore();
+}
+
 function loop(now) {
   const dt = Math.min(0.04, (now - state.last) / 1000 || 0);
   state.last = now;
@@ -641,6 +723,26 @@ function selfCheck() {
     state.selected = null;
   }
   console.assert(state.selected === null, "selected plane should reset to null when plane is removed from state.planes");
+
+  // Verify Stage 1 to 50+ configuration scaling
+  const c1 = getStageConfig(1);
+  const c5 = getStageConfig(5);
+  const c10 = getStageConfig(10);
+  const c50 = getStageConfig(50);
+  console.assert(c1.target === 8, "Stage 1 target should be 8");
+  console.assert(c10.target === 26, "Stage 10 target should be 26");
+  console.assert(c50.target === 106, "Stage 50 target should be 106");
+  console.assert(c5.isMilestone && c10.isMilestone && c50.isMilestone, "Milestone stages should be every 5th stage");
+  console.assert(c50.spawnInterval < c1.spawnInterval, "Later stages should have faster spawn interval");
+
+  // Verify Stage Clear trigger
+  state.stage = 1;
+  state.stageLanded = 7;
+  state.stageTarget = 8;
+  state.stageCleared = false;
+  state.stageLanded += 1;
+  if (state.stageLanded >= state.stageTarget) state.stageCleared = true;
+  console.assert(state.stageCleared === true, "Stage should be cleared when stageLanded reaches target");
 
   Object.assign(state, old);
 }

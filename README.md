@@ -29,7 +29,7 @@ No build step is needed.
 For detailed Senior PO analysis and design specifications, see [roadmap.md](file:///c:/Users/ethan/Downloads/airport_control/roadmap.md).
 
 ### Progress Tracker
-- [ ] **Phase 1: Stage-Based Progression System** (Stage 1-5, Stage Clear screen, Stage Objectives)
+- [x] **Phase 1: Stage-Based Progression System** (Stage 1–50+ scaling, Stage Clear screen, Milestone Rushes)
 - [ ] **Phase 2: Cozy Visual Refresh & Regional Airport Background** (Cute plane designs, cozy countryside aesthetic)
 - [ ] **Phase 3: Aircraft Fleet Profiling & Variable Dynamics** (Small Propeller, Regional Jet, Heavy Cargo, Helicopter)
 - [ ] **Phase 4: Color-Coded Matching & Colorblind Accessibility** (Sunburst, Teal, Coral, Emerald Helipad + symbol matching)
