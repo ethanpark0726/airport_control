@@ -4,7 +4,7 @@
 [![Deploy to GitHub Pages](https://github.com/ethanpark0726/airport_control/actions/workflows/pages.yml/badge.svg)](https://github.com/ethanpark0726/airport_control/actions/workflows/pages.yml)
 ![Tech Stack](https://img.shields.io/badge/Tech-HTML5%20Canvas%20%7C%20JS-58ffd1?style=flat-square)
 ![License](https://img.shields.io/badge/License-MIT-06d6a0?style=flat-square)
-![Version](https://img.shields.io/badge/Version-v2.3.3-9d4edd?style=flat-square)
+![Version](https://img.shields.io/badge/Version-v2.4.0-9d4edd?style=flat-square)
 
 A warm, picturesque browser-based air traffic control game set in a cozy regional airfield, built with plain HTML5, CSS, and Canvas.
 
@@ -38,7 +38,7 @@ For detailed Senior PO analysis and design specifications, see [roadmap.md](file
 - [x] **Phase 1: Stage-Based Progression System** (Stage 1–50+ scaling, Stage Clear screen, Milestone Rushes)
 - [x] **Phase 2: Cozy Visual Refresh & Regional Airport Background** (Cute plane designs, cozy countryside aesthetic)
 - [x] **Phase 3: Web Audio API Sound & Music System** (Procedural sound synthesizer, radio clicks, landing chimes, warning pulses, victory fanfare)
-- [ ] **Phase 4: Aircraft Fleet Profiling & Variable Dynamics** (Small Propeller, Regional Jet, Heavy Cargo, Helicopter)
+- [x] **Phase 4: Aircraft Fleet Profiling & Variable Dynamics** (Small Propeller, Regional Jet, Heavy Cargo, Helicopter & Helipad)
 - [ ] **Phase 5: Color-Coded Matching & Colorblind Accessibility** (Sunburst, Teal, Coral, Emerald Helipad + symbol matching)
 - [ ] **Phase 6: Active Items, Skills & Weather Hazards** (Freeze Time, Speed Boost, Emergency Reroute, Wind Hazards)
 
