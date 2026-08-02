@@ -4,7 +4,7 @@
 [![Deploy to GitHub Pages](https://github.com/ethanpark0726/airport_control/actions/workflows/pages.yml/badge.svg)](https://github.com/ethanpark0726/airport_control/actions/workflows/pages.yml)
 ![Tech Stack](https://img.shields.io/badge/Tech-HTML5%20Canvas%20%7C%20JS-58ffd1?style=flat-square)
 ![License](https://img.shields.io/badge/License-MIT-06d6a0?style=flat-square)
-![Version](https://img.shields.io/badge/Version-v2.3.2-9d4edd?style=flat-square)
+![Version](https://img.shields.io/badge/Version-v2.3.3-9d4edd?style=flat-square)
 
 A warm, picturesque browser-based air traffic control game set in a cozy regional airfield, built with plain HTML5, CSS, and Canvas.
 
