@@ -580,6 +580,101 @@ function draw() {
   if (state.gameOver) drawGameOver();
 }
 
+function drawCozyEnvironment() {
+  const cx = state.width / 2;
+  const cy = state.height / 2;
+  const radius = Math.hypot(state.width, state.height);
+  const r = runwayL();
+  const points = runwayPoints(r);
+
+  ctx.save();
+
+  // Rich Airfield Grass Meadow Base
+  const bgGrad = ctx.createRadialGradient(cx, cy, 60, cx, cy, radius * 0.7);
+  bgGrad.addColorStop(0, "#1d4031");
+  bgGrad.addColorStop(0.7, "#142d22");
+  bgGrad.addColorStop(1, "#0c1d16");
+  ctx.fillStyle = bgGrad;
+  ctx.fillRect(0, 0, state.width, state.height);
+
+  // Soft Organic Field Patch Texture
+  ctx.fillStyle = "rgba(255, 255, 255, 0.015)";
+  ctx.beginPath();
+  ctx.arc(state.width * 0.2, state.height * 0.3, 180, 0, TAU);
+  ctx.arc(state.width * 0.8, state.height * 0.7, 240, 0, TAU);
+  ctx.fill();
+
+  // Perimeter Tree Line Clusters (Corner Foliage)
+  ctx.fillStyle = "rgba(13, 31, 23, 0.75)";
+  const trees = [
+    { x: 40, y: 50, r: 45 }, { x: 90, y: 35, r: 35 }, { x: 30, y: 110, r: 40 },
+    { x: state.width - 40, y: state.height - 50, r: 50 }, { x: state.width - 90, y: state.height - 30, r: 40 },
+    { x: 60, y: state.height - 60, r: 48 }, { x: 110, y: state.height - 40, r: 38 }
+  ];
+  for (const tree of trees) {
+    ctx.beginPath();
+    ctx.arc(tree.x, tree.y, tree.r, 0, TAU);
+    ctx.fill();
+  }
+
+  // Animated Windmill (Top Left)
+  const wx = 80;
+  const wy = 85;
+  ctx.strokeStyle = "rgba(231,255,246,0.3)";
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(wx - 8, wy + 24);
+  ctx.lineTo(wx, wy);
+  ctx.lineTo(wx + 8, wy + 24);
+  ctx.stroke();
+  ctx.save();
+  ctx.translate(wx, wy);
+  ctx.rotate(state.elapsed * 1.5);
+  ctx.strokeStyle = "rgba(255,231,118,0.5)";
+  ctx.lineWidth = 2;
+  for (let i = 0; i < 3; i += 1) {
+    ctx.rotate(TAU / 3);
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.lineTo(0, -18);
+    ctx.stroke();
+  }
+  ctx.restore();
+
+  // Animated Windsock near Approach
+  const wsx = points.approach.x + 35;
+  const wsy = points.approach.y - 25;
+  ctx.strokeStyle = "rgba(231,255,246,0.5)";
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(wsx, wsy + 16);
+  ctx.lineTo(wsx, wsy);
+  ctx.stroke();
+  const sockAngle = Math.sin(state.elapsed * 2) * 0.15 + 0.3;
+  ctx.save();
+  ctx.translate(wsx, wsy);
+  ctx.rotate(sockAngle);
+  ctx.fillStyle = "#ff7b54";
+  ctx.fillRect(0, -4, 14, 8);
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(4, -4, 4, 8);
+  ctx.restore();
+
+  // Drifting Soft Clouds
+  ctx.fillStyle = "rgba(255, 255, 255, 0.04)";
+  for (let i = 0; i < 3; i += 1) {
+    const cloudX = ((state.elapsed * 12 + i * 280) % (state.width + 200)) - 100;
+    const cloudY = 120 + i * 160;
+    ctx.beginPath();
+    ctx.arc(cloudX, cloudY, 32, 0, TAU);
+    ctx.arc(cloudX + 26, cloudY - 10, 26, 0, TAU);
+    ctx.arc(cloudX + 50, cloudY, 28, 0, TAU);
+    ctx.fill();
+  }
+
+  ctx.restore();
+}
+
 function drawLandingZones() {
   drawRunway(runwayL());
   if (state.stage >= 2) drawRunway(runwayR());

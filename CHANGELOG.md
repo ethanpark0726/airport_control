@@ -61,3 +61,5 @@
   - 🎶 **Soft Pentatonic Arpeggio**: Gentle 65 BPM background melody notes.
   - 🔊 **Seamless HUD Mute Sync**: Seamlessly starts/stops BGM with the `#soundToggle` button and first user interaction.
 - Bumped `README.md` version badge to `v2.5.1`.
+- Restored `drawCozyEnvironment()` function in `game.js` to ensure the airfield meadow background, windsock, windmill, and clouds render properly without ReferenceErrors.
+- Bumped `README.md` version badge to `v2.5.2`.
