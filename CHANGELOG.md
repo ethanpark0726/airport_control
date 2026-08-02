@@ -65,3 +65,5 @@
 - Bumped `README.md` version badge to `v2.5.2`.
 - Fixed runway centerline dash line passing directly through the touchdown zone box text (`RWY 09L` & `●`), giving touchdown boxes a solid dark backing and placing text cleanly over the runway.
 - Bumped `README.md` version badge to `v2.5.3`.
+- Restored exact original runway graphics, green touchdown box (`rgba(88,255,209,0.22)`), and `LAND` text positioning above the runway as requested.
+- Bumped `README.md` version badge to `v2.5.4`.

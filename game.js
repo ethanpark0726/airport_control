@@ -708,7 +708,7 @@ function drawRunway(r) {
   ctx.rotate(r.angle);
 
   // Approach Centerline Guide
-  ctx.strokeStyle = r.color ? `${r.color}55` : "rgba(255,231,118,0.35)";
+  ctx.strokeStyle = "rgba(255,231,118,0.35)";
   ctx.lineWidth = 1.5;
   ctx.setLineDash([12, 12]);
   ctx.beginPath();
@@ -719,7 +719,7 @@ function drawRunway(r) {
 
   // Asphalt Runway Main Strip
   ctx.fillStyle = "#1e2824";
-  ctx.strokeStyle = r.color || "rgba(231,255,246,0.6)";
+  ctx.strokeStyle = "rgba(231,255,246,0.6)";
   ctx.lineWidth = 2;
   ctx.fillRect(-r.length / 2, -r.width / 2, r.length, r.width);
   ctx.strokeRect(-r.length / 2, -r.width / 2, r.length, r.width);
@@ -734,43 +734,31 @@ function drawRunway(r) {
     ctx.fillRect(r.length / 2 - 20, i * 3.5 - stripeHeight / 6, 12, stripeWidth);
   }
 
-  // Centerline Dashes (Drawn only past the Touchdown Zone to avoid text overlap)
-  ctx.strokeStyle = r.color || "#ffe776";
+  // Centerline Dashes
+  ctx.strokeStyle = "#ffe776";
   ctx.lineWidth = 2;
   ctx.setLineDash([10, 10]);
   ctx.beginPath();
-  ctx.moveTo(-r.length / 2 + 15 + r.length * 0.40, 0);
+  ctx.moveTo(-r.length / 2 + 26, 0);
   ctx.lineTo(r.length / 2 - 26, 0);
   ctx.stroke();
   ctx.setLineDash([]);
 
-  // Touchdown Zone Box (Solid Dark Backing + Colored Tint + Border)
-  const tdX = -r.length / 2 + 10;
-  const tdY = -r.width / 2 + 3;
-  const tdW = r.length * 0.40;
-  const tdH = r.width - 6;
-
-  // Solid dark background to cleanly erase any background lines
-  ctx.fillStyle = "#16221c";
-  ctx.fillRect(tdX, tdY, tdW, tdH);
-
-  // Colored Tint Overlay & Border
-  ctx.fillStyle = (r.color || "#58ffd1") + "28";
-  ctx.strokeStyle = r.color || "#58ffd1";
+  // Original Green Landing Touchdown Zone Box
+  ctx.fillStyle = "rgba(88,255,209,0.22)";
+  ctx.strokeStyle = "rgba(88,255,209,0.85)";
   ctx.lineWidth = 2;
-  ctx.fillRect(tdX, tdY, tdW, tdH);
-  ctx.strokeRect(tdX, tdY, tdW, tdH);
+  ctx.fillRect(-r.length / 2 + 10, -r.width / 2 + 4, r.length * 0.38, r.width - 8);
+  ctx.strokeRect(-r.length / 2 + 10, -r.width / 2 + 4, r.length * 0.38, r.width - 8);
 
-  // Clean Symbol and Name Text
-  ctx.fillStyle = r.color || "#9ffff0";
-  ctx.font = "800 11px ui-monospace, SFMono-Regular, Consolas, monospace";
+  // Original "LAND" Text & Symbol placed ABOVE the Runway
+  ctx.fillStyle = "#9ffff0";
+  ctx.font = "700 11px ui-monospace, SFMono-Regular, Consolas, monospace";
   ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-  ctx.fillText(`${r.symbol || ""} ${r.name || "LAND"}`, tdX + tdW / 2, 0);
-
-  // Guidance Arrows below runway
-  drawRunwayArrow(-r.length * 0.44, r.width * 0.78, 16);
-  drawRunwayArrow(-r.length * 0.22, r.width * 0.78, 16);
+  const labelText = r.symbol ? `${r.symbol} ${r.name || "LAND"}` : (r.name || "LAND");
+  ctx.fillText(labelText, -r.length * 0.31, -r.width * 0.72);
+  drawRunwayArrow(-r.length * 0.42, r.width * 0.72, 18);
+  drawRunwayArrow(-r.length * 0.24, r.width * 0.72, 18);
   ctx.restore();
 
   // Approach Marker Text
