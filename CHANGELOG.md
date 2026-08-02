@@ -40,4 +40,11 @@
 - Completely removed top-right tarmac apron, taxiway strip, parked plane silhouettes, and control tower structures from background graphics.
 - Replaced plane selection chirp (`880Hz -> 1760Hz`) with a subtle low-frequency radio switch click (`240Hz -> 110Hz`), preventing any high-pitched chirps during interaction.
 - Bound persistent `<audio id="landingAudio">` element in `index.html` for 100% reliable landing audio playback.
-- Bumped `README.md` version badge to `v2.3.3`.
+- Reduced landing audio playback volume in `sound.js` from 0.95 to 0.35 per user feedback.
+- Implemented Phase 4 Aircraft Fleet Profiling & Variable Dynamics (`game.js`):
+  - 🛩️ **Light Propeller**: Fast speed (68kt), nimble turning radius (1.65), small body.
+  - 🛫 **Regional Jet**: Medium speed (54kt), standard handling, sleek passenger jet body.
+  - 📦 **Heavy Cargo**: Slow speed (42kt), wide turning radius (0.9), large collision box (21px radius), appears in Stage 3+.
+  - 🚁 **Helicopter**: Slow speed (34kt), sharp 90° pivot turning (2.8), landing on dedicated Emerald Helipad (`[H]`), appears in Stage 5+.
+- Added Emerald Helipad (`[H]`) landing zone graphic and helicopter landing target logic.
+- Bumped `README.md` version badge to `v2.4.0`.

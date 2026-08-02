@@ -132,7 +132,7 @@ const SoundManager = {
         const source = this.ctx.createBufferSource();
         source.buffer = this.landingBuffer;
         const gainNode = this.ctx.createGain();
-        gainNode.gain.value = 0.95;
+        gainNode.gain.value = 0.35;
         source.connect(gainNode);
         gainNode.connect(this.ctx.destination);
         source.start(0);
@@ -144,7 +144,7 @@ const SoundManager = {
     if (this.landingAudio) {
       try {
         this.landingAudio.currentTime = 0;
-        this.landingAudio.volume = 0.95;
+        this.landingAudio.volume = 0.35;
         this.landingAudio.play().catch(() => {});
       } catch (_) {}
     }

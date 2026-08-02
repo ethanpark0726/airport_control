@@ -113,18 +113,63 @@ function spawnPlane() {
   const r = runway();
   const target = { x: r.x + (Math.random() - 0.5) * r.length * 0.8, y: r.y + (Math.random() - 0.5) * r.width * 8 };
   const angle = Math.atan2(target.y - y, target.x - x);
-  const config = getStageConfig(state.stage);
-  const speed = config.speedMin + Math.random() * (config.speedMax - config.speedMin);
+
+  // Phase 4 Fleet Profiling Selection
+  const rand = Math.random();
+  let type = "propeller";
+  if (state.stage >= 5) {
+    if (rand < 0.30) type = "propeller";
+    else if (rand < 0.65) type = "jet";
+    else if (rand < 0.85) type = "cargo";
+    else type = "helicopter";
+  } else if (state.stage >= 3) {
+    if (rand < 0.40) type = "propeller";
+    else if (rand < 0.80) type = "jet";
+    else type = "cargo";
+  } else {
+    type = rand < 0.55 ? "propeller" : "jet";
+  }
+
+  let speed = 55;
+  let turnSpeed = 1.35;
+  let radius = 15;
+  let icon = "🛫";
+  let name = "Regional Jet";
+
+  if (type === "propeller") {
+    speed = 68;
+    turnSpeed = 1.65;
+    radius = 13;
+    icon = "🛩️";
+    name = "Light Prop";
+  } else if (type === "cargo") {
+    speed = 42;
+    turnSpeed = 0.9;
+    radius = 21;
+    icon = "📦";
+    name = "Heavy Cargo";
+  } else if (type === "helicopter") {
+    speed = 34;
+    turnSpeed = 2.8;
+    radius = 12;
+    icon = "🚁";
+    name = "Helicopter";
+  }
+
   state.planes.push({
     id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now() + Math.random()),
+    type,
+    name,
+    icon,
     x,
     y,
     angle,
     speed,
+    turnSpeed,
     target,
     route: [],
     curveControl: null,
-    radius: 12,
+    radius,
     safe: true,
     age: 0,
   });
@@ -293,11 +338,12 @@ function update(dt) {
   const r = runway();
   for (const plane of state.planes) {
     plane.age += dt;
+    const turnRate = plane.turnSpeed || 1.35;
     if (plane.route.length) {
       moveAlongRoute(plane, plane.speed * dt);
     } else {
       const desired = Math.atan2(plane.target.y - plane.y, plane.target.x - plane.x);
-      plane.angle = turnToward(plane.angle, desired, dt * 1.35);
+      plane.angle = turnToward(plane.angle, desired, dt * turnRate);
       plane.x += Math.cos(plane.angle) * plane.speed * dt;
       plane.y += Math.sin(plane.angle) * plane.speed * dt;
     }
@@ -310,11 +356,13 @@ function update(dt) {
       const a = state.planes[i];
       const b = state.planes[j];
       const d = Math.hypot(a.x - b.x, a.y - b.y);
-      if (d < 24) {
+      const minCrashDist = (a.radius || 14) + (b.radius || 14);
+      const minWarnDist = minCrashDist * 2.6;
+      if (d < minCrashDist) {
         crash(a, b);
         return;
       }
-      if (d < 70) {
+      if (d < minWarnDist) {
         a.safe = false;
         b.safe = false;
         hasProximityWarning = true;
@@ -383,7 +431,21 @@ function turnToward(current, target, maxTurn) {
   return current + Math.max(-maxTurn, Math.min(maxTurn, delta));
 }
 
+function helipad() {
+  const r = runway();
+  return {
+    x: r.x - r.length * 0.52,
+    y: r.y + 60,
+    radius: 22,
+  };
+}
+
 function canLand(plane, r) {
+  if (plane.type === "helicopter") {
+    const hp = helipad();
+    const dHeli = Math.hypot(plane.x - hp.x, plane.y - hp.y);
+    if (dHeli < 26) return true;
+  }
   const metrics = landingMetrics(plane, r);
   return metrics.inLine && metrics.onRunway && metrics.headingOk && metrics.oneWay && plane.speed < 78;
 }
@@ -607,6 +669,25 @@ function drawRunway() {
   ctx.strokeStyle = "rgba(255,231,118,0.85)";
   ctx.stroke();
   ctx.restore();
+
+  // Draw Helipad (Emerald Green Pad with [H])
+  const hp = helipad();
+  ctx.save();
+  ctx.translate(hp.x, hp.y);
+  ctx.fillStyle = "rgba(70, 232, 157, 0.25)";
+  ctx.strokeStyle = "#46e89d";
+  ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  ctx.arc(0, 0, hp.radius, 0, TAU);
+  ctx.fill();
+  ctx.stroke();
+
+  ctx.fillStyle = "#ffffff";
+  ctx.font = "800 14px ui-monospace, SFMono-Regular, Consolas, monospace";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText("H", 0, 1);
+  ctx.restore();
 }
 
 function drawRunwayArrow(x, y, size) {
@@ -668,55 +749,141 @@ function drawPlane(plane) {
   ctx.translate(plane.x, plane.y);
   ctx.rotate(plane.angle);
 
-  const bodyColor = selected ? "#ffe776" : plane.safe ? "#58ffd1" : "#ff5e73";
+  const bodyColor = selected ? "#ffe776" : !plane.safe ? "#ff5e73" : plane.type === "cargo" ? "#ff7b54" : plane.type === "helicopter" ? "#46e89d" : plane.type === "propeller" ? "#ffe776" : "#58ffd1";
   const strokeColor = selected ? "#ffffff" : plane.safe ? "#e7fff6" : "#ffd0d6";
 
   ctx.fillStyle = bodyColor;
   ctx.strokeStyle = strokeColor;
   ctx.lineWidth = 2;
 
-  // Main Rounded Wings
-  ctx.beginPath();
-  ctx.roundRect(-4, -15, 8, 30, 4);
-  ctx.fill();
-  ctx.stroke();
+  if (plane.type === "helicopter") {
+    // Helicopter Rotor & Cabin Model
+    // Skids
+    ctx.strokeStyle = "rgba(231,255,246,0.7)";
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(-10, -8); ctx.lineTo(10, -8);
+    ctx.moveTo(-10, 8); ctx.lineTo(10, 8);
+    ctx.stroke();
 
-  // Tail Stabilizer
-  ctx.beginPath();
-  ctx.roundRect(-12, -7, 5, 14, 2);
-  ctx.fill();
-  ctx.stroke();
+    // Cabin Body
+    ctx.fillStyle = bodyColor;
+    ctx.strokeStyle = strokeColor;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.ellipse(2, 0, 10, 6, 0, 0, TAU);
+    ctx.fill();
+    ctx.stroke();
 
-  // Fuselage (Capsule Shape)
-  ctx.beginPath();
-  ctx.ellipse(0, 0, 15, 6, 0, 0, TAU);
-  ctx.fill();
-  ctx.stroke();
+    // Tail Boom
+    ctx.beginPath();
+    ctx.moveTo(-8, 0); ctx.lineTo(-18, 0);
+    ctx.stroke();
+    // Tail Rotor
+    const tailSpin = Math.sin(state.elapsed * 40) * 4;
+    ctx.beginPath();
+    ctx.moveTo(-18, -tailSpin); ctx.lineTo(-18, tailSpin);
+    ctx.stroke();
 
-  // Cockpit Glass Sheen
-  ctx.fillStyle = "#74f0ff";
-  ctx.beginPath();
-  ctx.ellipse(5, 0, 4, 3, 0, 0, TAU);
-  ctx.fill();
+    // Main Top Rotor Blade
+    ctx.strokeStyle = "rgba(255,255,255,0.85)";
+    ctx.lineWidth = 2;
+    const rotorAngle = state.elapsed * 25;
+    ctx.save();
+    ctx.translate(2, 0);
+    ctx.rotate(rotorAngle);
+    ctx.beginPath();
+    ctx.moveTo(-16, 0); ctx.lineTo(16, 0);
+    ctx.moveTo(0, -16); ctx.lineTo(0, 16);
+    ctx.stroke();
+    ctx.restore();
 
-  // Animated Spinning Propeller Nose
-  ctx.strokeStyle = "rgba(255, 255, 255, 0.75)";
-  ctx.lineWidth = 1.5;
-  const propAnim = Math.sin(state.elapsed * 35) * 6;
-  ctx.beginPath();
-  ctx.moveTo(16, -propAnim);
-  ctx.lineTo(16, propAnim);
-  ctx.stroke();
+  } else if (plane.type === "cargo") {
+    // Heavy Cargo Freighter (Large wings, quad engines, heavy body)
+    // Wings
+    ctx.beginPath();
+    ctx.roundRect(-2, -22, 10, 44, 4);
+    ctx.fill();
+    ctx.stroke();
+    // Heavy Tail
+    ctx.beginPath();
+    ctx.roundRect(-16, -11, 7, 22, 2);
+    ctx.fill();
+    ctx.stroke();
+    // Heavy Fuselage
+    ctx.beginPath();
+    ctx.ellipse(0, 0, 19, 9, 0, 0, TAU);
+    ctx.fill();
+    ctx.stroke();
+    // Cockpit Glass
+    ctx.fillStyle = "#74f0ff";
+    ctx.beginPath();
+    ctx.ellipse(8, 0, 4, 3.5, 0, 0, TAU);
+    ctx.fill();
+  } else if (plane.type === "jet") {
+    // Regional Passenger Jet (Swept wings, sleek fuselage)
+    // Swept Wings
+    ctx.beginPath();
+    ctx.moveTo(-2, -18); ctx.lineTo(6, 0); ctx.lineTo(-2, 18); ctx.lineTo(-6, 0);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    // Tail Fin
+    ctx.beginPath();
+    ctx.roundRect(-14, -8, 6, 16, 2);
+    ctx.fill();
+    ctx.stroke();
+    // Sleek Fuselage
+    ctx.beginPath();
+    ctx.ellipse(0, 0, 16, 6, 0, 0, TAU);
+    ctx.fill();
+    ctx.stroke();
+    // Cockpit Glass
+    ctx.fillStyle = "#74f0ff";
+    ctx.beginPath();
+    ctx.ellipse(6, 0, 4, 2.8, 0, 0, TAU);
+    ctx.fill();
+  } else {
+    // Light Propeller Aircraft
+    // Main Wings
+    ctx.beginPath();
+    ctx.roundRect(-4, -14, 8, 28, 4);
+    ctx.fill();
+    ctx.stroke();
+    // Tail Stabilizer
+    ctx.beginPath();
+    ctx.roundRect(-12, -7, 5, 14, 2);
+    ctx.fill();
+    ctx.stroke();
+    // Fuselage
+    ctx.beginPath();
+    ctx.ellipse(0, 0, 14, 5.5, 0, 0, TAU);
+    ctx.fill();
+    ctx.stroke();
+    // Cockpit Glass
+    ctx.fillStyle = "#74f0ff";
+    ctx.beginPath();
+    ctx.ellipse(4, 0, 3.5, 2.5, 0, 0, TAU);
+    ctx.fill();
+    // Animated Propeller
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.85)";
+    ctx.lineWidth = 1.5;
+    const propAnim = Math.sin(state.elapsed * 35) * 6;
+    ctx.beginPath();
+    ctx.moveTo(15, -propAnim); ctx.lineTo(15, propAnim);
+    ctx.stroke();
+  }
 
   ctx.restore();
 
-  // Flight Route & Hint
+  // Flight Route & Icon/Speed Badge
   ctx.save();
   if (selected && plane.route.length) drawLandingRoute(plane);
   else drawTargetLine(plane, selected);
   ctx.fillStyle = plane.safe ? "rgba(231,255,246,0.85)" : "rgba(255,130,145,0.95)";
   ctx.font = "700 12px ui-monospace, SFMono-Regular, Consolas, monospace";
-  ctx.fillText(`${Math.round(plane.speed)}kt`, plane.x + 18, plane.y - 14);
+  const iconStr = plane.icon || "🛩️";
+  ctx.fillText(`${iconStr} ${Math.round(plane.speed)}kt`, plane.x + 18, plane.y - 14);
   if (selected) drawLandingHint(plane);
   ctx.restore();
 }
