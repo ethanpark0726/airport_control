@@ -7,6 +7,7 @@ const SoundManager = {
   muted: false,
   bgmNode: null,
   landingAudio: null,
+  landingBuffer: null,
 
   init() {
     if (!this.ctx) {
@@ -24,6 +25,29 @@ const SoundManager = {
         this.landingAudio.preload = "auto";
       } catch (_) {}
     }
+    if (this.ctx && !this.landingBuffer) {
+      this.preloadLandingMp3();
+    }
+  },
+
+  preloadLandingMp3() {
+    if (typeof fetch === "undefined" || !this.ctx) return;
+    fetch("airplane_landing_sound.mp3")
+      .then((res) => {
+        if (!res.ok) throw new Error("HTTP error " + res.status);
+        return res.arrayBuffer();
+      })
+      .then((buffer) => {
+        if (this.ctx) {
+          return this.ctx.decodeAudioData(buffer);
+        }
+      })
+      .then((decoded) => {
+        if (decoded) {
+          this.landingBuffer = decoded;
+        }
+      })
+      .catch(() => {});
   },
 
   toggleMute() {
@@ -92,6 +116,21 @@ const SoundManager = {
     if (this.muted) return;
     this.init();
 
+    // 1. Play decoded Web Audio MP3 Buffer (Zero latency, perfect fidelity)
+    if (this.ctx && this.landingBuffer) {
+      try {
+        const source = this.ctx.createBufferSource();
+        source.buffer = this.landingBuffer;
+        const gainNode = this.ctx.createGain();
+        gainNode.gain.value = 0.9;
+        source.connect(gainNode);
+        gainNode.connect(this.ctx.destination);
+        source.start(0);
+        return;
+      } catch (_) {}
+    }
+
+    // 2. Play HTML5 Audio element fallback
     if (this.landingAudio) {
       try {
         const soundClone = this.landingAudio.cloneNode();
@@ -212,3 +251,12 @@ const SoundManager = {
     } catch (_) {}
   }
 };
+
+if (typeof window !== "undefined") {
+  const triggerInit = () => {
+    SoundManager.init();
+  };
+  window.addEventListener("DOMContentLoaded", triggerInit, { once: true });
+  window.addEventListener("pointerdown", triggerInit, { once: true });
+  window.addEventListener("click", triggerInit, { once: true });
+}
