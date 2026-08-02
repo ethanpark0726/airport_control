@@ -19,12 +19,19 @@ const SoundManager = {
     if (this.ctx && this.ctx.state === "suspended") {
       this.ctx.resume();
     }
-    if (!this.landingAudio && typeof Audio !== "undefined") {
-      try {
-        const audioSrc = typeof LANDING_SOUND_DATA !== "undefined" ? LANDING_SOUND_DATA : "airplane_landing_sound.mp3";
-        this.landingAudio = new Audio(audioSrc);
-        this.landingAudio.preload = "auto";
-      } catch (_) {}
+    if (!this.landingAudio) {
+      const audioSrc = typeof LANDING_SOUND_DATA !== "undefined" ? LANDING_SOUND_DATA : "airplane_landing_sound.mp3";
+      if (typeof document !== "undefined" && document.getElementById("landingAudio")) {
+        this.landingAudio = document.getElementById("landingAudio");
+        if (!this.landingAudio.src || this.landingAudio.src === "about:blank") {
+          this.landingAudio.src = audioSrc;
+        }
+      } else if (typeof Audio !== "undefined") {
+        try {
+          this.landingAudio = new Audio(audioSrc);
+          this.landingAudio.preload = "auto";
+        } catch (_) {}
+      }
     }
     if (this.ctx && !this.landingBuffer) {
       this.preloadLandingMp3();
@@ -75,18 +82,19 @@ const SoundManager = {
       const osc = this.ctx.createOscillator();
       const gain = this.ctx.createGain();
 
+      // Soft radio click thud (Not a chirp!)
       osc.type = "sine";
-      osc.frequency.setValueAtTime(880, now);
-      osc.frequency.exponentialRampToValueAtTime(1760, now + 0.08);
+      osc.frequency.setValueAtTime(240, now);
+      osc.frequency.exponentialRampToValueAtTime(110, now + 0.03);
 
-      gain.gain.setValueAtTime(0.15, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+      gain.gain.setValueAtTime(0.12, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.03);
 
       osc.connect(gain);
       gain.connect(this.ctx.destination);
 
       osc.start(now);
-      osc.stop(now + 0.08);
+      osc.stop(now + 0.03);
     } catch (_) {}
   },
 
@@ -101,16 +109,16 @@ const SoundManager = {
       const gain = this.ctx.createGain();
 
       osc.type = "triangle";
-      osc.frequency.setValueAtTime(440, now);
+      osc.frequency.setValueAtTime(320, now);
 
-      gain.gain.setValueAtTime(0.05, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.03);
+      gain.gain.setValueAtTime(0.04, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.02);
 
       osc.connect(gain);
       gain.connect(this.ctx.destination);
 
       osc.start(now);
-      osc.stop(now + 0.03);
+      osc.stop(now + 0.02);
     } catch (_) {}
   },
 
@@ -118,13 +126,13 @@ const SoundManager = {
     if (this.muted) return;
     this.init();
 
-    // 1. Play decoded Web Audio MP3 Buffer (Zero latency, perfect fidelity)
+    // 1. Play decoded Web Audio MP3 Buffer (Zero latency, 100% reliable)
     if (this.ctx && this.landingBuffer) {
       try {
         const source = this.ctx.createBufferSource();
         source.buffer = this.landingBuffer;
         const gainNode = this.ctx.createGain();
-        gainNode.gain.value = 0.9;
+        gainNode.gain.value = 0.95;
         source.connect(gainNode);
         gainNode.connect(this.ctx.destination);
         source.start(0);
@@ -132,13 +140,12 @@ const SoundManager = {
       } catch (_) {}
     }
 
-    // 2. Play HTML5 Audio element
+    // 2. Play persistent HTML5 Audio element
     if (this.landingAudio) {
       try {
-        const audioSrc = typeof LANDING_SOUND_DATA !== "undefined" ? LANDING_SOUND_DATA : "airplane_landing_sound.mp3";
-        const soundClone = new Audio(audioSrc);
-        soundClone.volume = 0.85;
-        soundClone.play().catch(() => {});
+        this.landingAudio.currentTime = 0;
+        this.landingAudio.volume = 0.95;
+        this.landingAudio.play().catch(() => {});
       } catch (_) {}
     }
   },
