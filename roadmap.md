@@ -86,11 +86,10 @@ By combining **Stage-based progression**, **Cute aircraft art style**, **Diverse
 - [x] Introduce Helicopters with dedicated Helipad (`[H]`) landing targets in Stage 5+
 
 ### Phase 5: Color-Coded Matching & Colorblind Accessibility 🎨
-- [ ] Create HSL curated color theme for runways, helipads, and aircraft
-- [ ] Implement matching landing rules (Yellow plane -> Yellow runway, etc.)
-- [ ] Add geometric accessibility symbols (●, ▲, ★, ◆) on aircraft and runway markers
-- [ ] Add selection, route drawing, landing chime, warning alert, and stage clear audio effects
-- [ ] Add audio toggle button on HUD
+- [x] Create HSL curated color theme for runways, helipads, and aircraft (Amber Gold `#ffd166`, Cyan Teal `#4ecdc4`, Coral Red `#ff6b6b`, Emerald Green `#06d6a0`)
+- [x] Implement matching landing rules (Propeller -> RWY 09L, Jet -> RWY 09R, Cargo -> CARGO, Helicopter -> HELI)
+- [x] Add geometric accessibility symbols (Circle `●`, Triangle `▲`, Diamond `◆`, Star `★`) on aircraft badges and landing zone markers
+- [x] Add HUD sound toggle button and Web Audio synthesizer triggers for selection, route drawing, landing audio, warning alerts, and stage clear fanfares
 
 ### Phase 6: Active Items, Skills & Weather Hazards ⚡
 - [ ] Implement Skill Bar UI (Air Traffic Freeze, Speed Boost, Emergency Reroute)

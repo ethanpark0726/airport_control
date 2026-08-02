@@ -48,3 +48,11 @@
   - 🚁 **Helicopter**: Slow speed (34kt), sharp 90° pivot turning (2.8), landing on dedicated Emerald Helipad (`[H]`), appears in Stage 5+.
 - Added Emerald Helipad (`[H]`) landing zone graphic and helicopter landing target logic.
 - Bumped `README.md` version badge to `v2.4.0`.
+- Implemented Phase 5 Color-Coded Matching & Colorblind Accessibility (`game.js`):
+  - 🟡 **Primary Runway Alpha (`RWY 09L`)**: Amber Gold (`#ffd166`), Circle symbol `●` for Light Propellers.
+  - 🔵 **Secondary Runway Bravo (`RWY 09R`)**: Cyan Teal (`#4ecdc4`), Triangle symbol `▲` for Regional Jets (Stage 2+).
+  - 🔴 **Heavy Cargo Strip (`CARGO`)**: Coral Red (`#ff6b6b`), Diamond symbol `◆` for Cargo Freighters (Stage 3+).
+  - 🟢 **Helipad (`HELI`)**: Emerald Green (`#06d6a0`), Star symbol `★` for Helicopters (Stage 5+).
+- Added 100% colorblind accessibility with matching geometric symbols (Circle `●`, Triangle `▲`, Diamond `◆`, Star `★`) displayed on aircraft badges and landing zone touchdown boxes.
+- Implemented landing target matching rules (`canLand(plane)`) and contextual landing hints (`landingHint(plane)`).
+- Bumped `README.md` version badge to `v2.5.0`.
