@@ -38,5 +38,5 @@
 - Implemented Phase 2 Cozy Visual Refresh (`drawCozyEnvironment()`, `drawCutePlane()`, detailed asphalt runway, terminal tarmac, spinning windmill, windsock, and soft drifting clouds).
 - Completely removed legacy radar conic sweep line and radar grid circles from background, replacing them with manicured airfield grass textures.
 - Completely removed top-right tarmac apron, taxiway strip, parked plane silhouettes, and control tower structures from background graphics.
-- Replaced synthetic landing triad chime with a realistic airplane touchdown sound (tire friction rubber-on-asphalt squeak + low-pass jet engine reverse thrust noise burst).
-- Bumped `README.md` version badge to `v2.2.1`.
+- Integrated user-provided authentic landing audio file (`airplane_landing_sound.mp3`) with `cloneNode()` for seamless overlapping landing sound playback.
+- Bumped `README.md` version badge to `v2.3.0`.

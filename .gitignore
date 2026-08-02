@@ -1,0 +1,10 @@
+# Audio Assets
+*.mp3
+*.wav
+*.ogg
+
+# OS & Editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

@@ -6,6 +6,7 @@ const SoundManager = {
   ctx: null,
   muted: false,
   bgmNode: null,
+  landingAudio: null,
 
   init() {
     if (!this.ctx) {
@@ -16,6 +17,12 @@ const SoundManager = {
     }
     if (this.ctx && this.ctx.state === "suspended") {
       this.ctx.resume();
+    }
+    if (!this.landingAudio && typeof Audio !== "undefined") {
+      try {
+        this.landingAudio = new Audio("airplane_landing_sound.mp3");
+        this.landingAudio.preload = "auto";
+      } catch (_) {}
     }
   },
 
@@ -84,12 +91,30 @@ const SoundManager = {
   playLandChime() {
     if (this.muted) return;
     this.init();
-    if (!this.ctx) return;
 
+    if (this.landingAudio) {
+      try {
+        const soundClone = this.landingAudio.cloneNode();
+        soundClone.volume = 0.85;
+        const promise = soundClone.play();
+        if (promise !== undefined) {
+          promise.catch(() => {
+            this.playSyntheticLand();
+          });
+        }
+        return;
+      } catch (_) {
+        this.playSyntheticLand();
+      }
+    } else {
+      this.playSyntheticLand();
+    }
+  },
+
+  playSyntheticLand() {
+    if (!this.ctx) return;
     try {
       const now = this.ctx.currentTime;
-
-      // 1. Tire Friction Touchdown Squeak (High-pitched rubber-on-asphalt chirp)
       const squeakOsc = this.ctx.createOscillator();
       const squeakGain = this.ctx.createGain();
       squeakOsc.type = "sine";
@@ -104,33 +129,6 @@ const SoundManager = {
 
       squeakOsc.start(now);
       squeakOsc.stop(now + 0.12);
-
-      // 2. Jet Engine Reverse Thrust & Runway Deceleration Noise (Subtle roar/rumble)
-      const bufferSize = Math.floor(this.ctx.sampleRate * 0.45);
-      const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
-      const data = buffer.getChannelData(0);
-      for (let i = 0; i < bufferSize; i++) {
-        data[i] = Math.random() * 2 - 1;
-      }
-
-      const noise = this.ctx.createBufferSource();
-      noise.buffer = buffer;
-
-      const filter = this.ctx.createBiquadFilter();
-      filter.type = "lowpass";
-      filter.frequency.setValueAtTime(450, now);
-      filter.frequency.exponentialRampToValueAtTime(140, now + 0.45);
-
-      const noiseGain = this.ctx.createGain();
-      noiseGain.gain.setValueAtTime(0.3, now + 0.04);
-      noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
-
-      noise.connect(filter);
-      filter.connect(noiseGain);
-      noiseGain.connect(this.ctx.destination);
-
-      noise.start(now + 0.03);
-      noise.stop(now + 0.45);
     } catch (_) {}
   },
 
