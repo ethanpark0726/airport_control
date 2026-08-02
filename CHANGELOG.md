@@ -63,3 +63,5 @@
 - Bumped `README.md` version badge to `v2.5.1`.
 - Restored `drawCozyEnvironment()` function in `game.js` to ensure the airfield meadow background, windsock, windmill, and clouds render properly without ReferenceErrors.
 - Bumped `README.md` version badge to `v2.5.2`.
+- Fixed runway centerline dash line passing directly through the touchdown zone box text (`RWY 09L` & `●`), giving touchdown boxes a solid dark backing and placing text cleanly over the runway.
+- Bumped `README.md` version badge to `v2.5.3`.
