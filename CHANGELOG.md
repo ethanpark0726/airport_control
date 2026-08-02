@@ -38,5 +38,6 @@
 - Implemented Phase 2 Cozy Visual Refresh (`drawCozyEnvironment()`, `drawCutePlane()`, detailed asphalt runway, terminal tarmac, spinning windmill, windsock, and soft drifting clouds).
 - Completely removed legacy radar conic sweep line and radar grid circles from background, replacing them with manicured airfield grass textures.
 - Completely removed top-right tarmac apron, taxiway strip, parked plane silhouettes, and control tower structures from background graphics.
-- Upgraded `sound.js` with Web Audio API `decodeAudioData` preloading for `airplane_landing_sound.mp3`, ensuring 100% reliable zero-latency playback of the user's authentic MP3 landing sound upon landing.
-- Bumped `README.md` version badge to `v2.3.1`.
+- Embedded `airplane_landing_sound.mp3` as Base64 Data URI (`landingSoundData.js`) to guarantee 100% offline & local `file://` playback without CORS restrictions.
+- Removed synthetic chirping sound fallback entirely, ensuring only the user's authentic MP3 landing sound is played upon landing.
+- Bumped `README.md` version badge to `v2.3.2`.

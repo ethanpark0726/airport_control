@@ -21,7 +21,8 @@ const SoundManager = {
     }
     if (!this.landingAudio && typeof Audio !== "undefined") {
       try {
-        this.landingAudio = new Audio("airplane_landing_sound.mp3");
+        const audioSrc = typeof LANDING_SOUND_DATA !== "undefined" ? LANDING_SOUND_DATA : "airplane_landing_sound.mp3";
+        this.landingAudio = new Audio(audioSrc);
         this.landingAudio.preload = "auto";
       } catch (_) {}
     }
@@ -32,7 +33,8 @@ const SoundManager = {
 
   preloadLandingMp3() {
     if (typeof fetch === "undefined" || !this.ctx) return;
-    fetch("airplane_landing_sound.mp3")
+    const audioSrc = typeof LANDING_SOUND_DATA !== "undefined" ? LANDING_SOUND_DATA : "airplane_landing_sound.mp3";
+    fetch(audioSrc)
       .then((res) => {
         if (!res.ok) throw new Error("HTTP error " + res.status);
         return res.arrayBuffer();
@@ -130,45 +132,15 @@ const SoundManager = {
       } catch (_) {}
     }
 
-    // 2. Play HTML5 Audio element fallback
+    // 2. Play HTML5 Audio element
     if (this.landingAudio) {
       try {
-        const soundClone = this.landingAudio.cloneNode();
+        const audioSrc = typeof LANDING_SOUND_DATA !== "undefined" ? LANDING_SOUND_DATA : "airplane_landing_sound.mp3";
+        const soundClone = new Audio(audioSrc);
         soundClone.volume = 0.85;
-        const promise = soundClone.play();
-        if (promise !== undefined) {
-          promise.catch(() => {
-            this.playSyntheticLand();
-          });
-        }
-        return;
-      } catch (_) {
-        this.playSyntheticLand();
-      }
-    } else {
-      this.playSyntheticLand();
+        soundClone.play().catch(() => {});
+      } catch (_) {}
     }
-  },
-
-  playSyntheticLand() {
-    if (!this.ctx) return;
-    try {
-      const now = this.ctx.currentTime;
-      const squeakOsc = this.ctx.createOscillator();
-      const squeakGain = this.ctx.createGain();
-      squeakOsc.type = "sine";
-      squeakOsc.frequency.setValueAtTime(2600, now);
-      squeakOsc.frequency.exponentialRampToValueAtTime(1200, now + 0.12);
-
-      squeakGain.gain.setValueAtTime(0.25, now);
-      squeakGain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
-
-      squeakOsc.connect(squeakGain);
-      squeakGain.connect(this.ctx.destination);
-
-      squeakOsc.start(now);
-      squeakOsc.stop(now + 0.12);
-    } catch (_) {}
   },
 
   playWarning() {
