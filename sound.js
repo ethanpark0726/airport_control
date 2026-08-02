@@ -5,9 +5,10 @@
 const SoundManager = {
   ctx: null,
   muted: false,
-  bgmNode: null,
   landingAudio: null,
   landingBuffer: null,
+  bgmInterval: null,
+  bgmStep: 0,
 
   init() {
     if (!this.ctx) {
@@ -35,6 +36,87 @@ const SoundManager = {
     }
     if (this.ctx && !this.landingBuffer) {
       this.preloadLandingMp3();
+    }
+    if (this.ctx && !this.muted) {
+      this.startBgm();
+    }
+  },
+
+  startBgm() {
+    if (this.muted || this.bgmInterval || !this.ctx) return;
+    this.bgmStep = 0;
+
+    // Cozy Ambient Chord Progression (Cmaj7 -> Fmaj7 -> Am7 -> G6)
+    const chords = [
+      [261.63, 329.63, 392.00, 493.88], // Cmaj7
+      [174.61, 220.00, 261.63, 329.63], // Fmaj7
+      [220.00, 261.63, 329.63, 392.00], // Am7
+      [196.00, 246.94, 293.66, 329.63], // G6
+    ];
+    const melodyNotes = [523.25, 659.25, 783.99, 880.00, 987.77, 1046.50];
+
+    const playStep = () => {
+      if (this.muted || !this.ctx) return;
+      try {
+        const now = this.ctx.currentTime;
+        const chordIdx = Math.floor(this.bgmStep / 4) % chords.length;
+        const currentChord = chords[chordIdx];
+
+        // 1. Warm Ambient Synth Pad Chord (Every 4 beats)
+        if (this.bgmStep % 4 === 0) {
+          currentChord.forEach((freq) => {
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            const filter = this.ctx.createBiquadFilter();
+
+            osc.type = "sine";
+            osc.frequency.setValueAtTime(freq, now);
+
+            filter.type = "lowpass";
+            filter.frequency.setValueAtTime(600, now);
+
+            gain.gain.setValueAtTime(0.001, now);
+            gain.gain.linearRampToValueAtTime(0.022, now + 0.4);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 3.4);
+
+            osc.connect(filter);
+            filter.connect(gain);
+            gain.connect(this.ctx.destination);
+
+            osc.start(now);
+            osc.stop(now + 3.5);
+          });
+        }
+
+        // 2. Soft Lo-Fi Arpeggio Note (Every beat)
+        const noteFreq = melodyNotes[(this.bgmStep * 3 + chordIdx * 2) % melodyNotes.length];
+        const melOsc = this.ctx.createOscillator();
+        const melGain = this.ctx.createGain();
+
+        melOsc.type = "triangle";
+        melOsc.frequency.setValueAtTime(noteFreq, now);
+
+        melGain.gain.setValueAtTime(0.012, now);
+        melGain.gain.exponentialRampToValueAtTime(0.0005, now + 0.55);
+
+        melOsc.connect(melGain);
+        melGain.connect(this.ctx.destination);
+
+        melOsc.start(now);
+        melOsc.stop(now + 0.6);
+
+        this.bgmStep += 1;
+      } catch (_) {}
+    };
+
+    playStep();
+    this.bgmInterval = setInterval(playStep, 920); // 920ms tempo (~65 BPM)
+  },
+
+  stopBgm() {
+    if (this.bgmInterval) {
+      clearInterval(this.bgmInterval);
+      this.bgmInterval = null;
     }
   },
 
@@ -65,9 +147,10 @@ const SoundManager = {
     if (btn) {
       btn.textContent = this.muted ? "🔇 Muted" : "🔊 Sound";
     }
-    if (this.muted && this.bgmNode) {
-      try { this.bgmNode.stop(); } catch (_) {}
-      this.bgmNode = null;
+    if (this.muted) {
+      this.stopBgm();
+    } else {
+      this.startBgm();
     }
     return this.muted;
   },

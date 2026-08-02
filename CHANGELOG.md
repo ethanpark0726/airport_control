@@ -56,3 +56,8 @@
 - Added 100% colorblind accessibility with matching geometric symbols (Circle `●`, Triangle `▲`, Diamond `◆`, Star `★`) displayed on aircraft badges and landing zone touchdown boxes.
 - Implemented landing target matching rules (`canLand(plane)`) and contextual landing hints (`landingHint(plane)`).
 - Bumped `README.md` version badge to `v2.5.0`.
+- Implemented Procedural Retro-Cozy Web Audio BGM Synthesizer (`sound.js`):
+  - 🎹 **Lo-Fi Ambient Chords**: Relaxing Cmaj7 -> Fmaj7 -> Am7 -> G6 warm low-pass filtered synth pad progression.
+  - 🎶 **Soft Pentatonic Arpeggio**: Gentle 65 BPM background melody notes.
+  - 🔊 **Seamless HUD Mute Sync**: Seamlessly starts/stops BGM with the `#soundToggle` button and first user interaction.
+- Bumped `README.md` version badge to `v2.5.1`.
